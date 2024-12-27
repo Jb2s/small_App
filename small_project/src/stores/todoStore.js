@@ -55,7 +55,7 @@ export const useTodoStore = defineStore('todo', {
       if (todo) {
         const task = todo.todoTask.find(t => t.id === taskId);
         if (task) {
-          task.completed = !task.completed; // Basculer l'état de la sous-tâche
+          task.completed = !task.completed; 
           this.updateLocalStorage();
         }
       }
@@ -63,7 +63,7 @@ export const useTodoStore = defineStore('todo', {
     deleteTodoTask(todoId, taskId) {
       const todo = this.todos.find(t => t.id === todoId);
       if (todo) {
-        todo.todoTask = todo.todoTask.filter(t => t.id !== taskId); // Supprimer la sous-tâche
+        todo.todoTask = todo.todoTask.filter(t => t.id !== taskId); 
         this.updateLocalStorage();
       }
     },
@@ -72,8 +72,8 @@ export const useTodoStore = defineStore('todo', {
       if (this.currentUser) {
         const index = users.findIndex(user => user.id === this.currentUser.id);
         if (index !== -1) {
-          users[index].todoList = this.todos; // Mettre à jour la liste de tâches de l'utilisateur
-          localStorage.setItem('users', JSON.stringify(users)); // Sauvegarder les modifications
+          users[index].todoList = this.todos; 
+          localStorage.setItem('users', JSON.stringify(users)); 
         }
       }
     },

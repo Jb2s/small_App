@@ -26,14 +26,14 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
-  authStore.loadUsers(); // Charger les utilisateurs pour vérifier l'authentification
+  authStore.loadUsers(); 
 
   const isAuthenticated = authStore.isAuthenticated;
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/'); // Rediriger vers la page d'accueil si non authentifié
+    next('/'); 
   } else {
-    next(); // Continuer vers la route demandée
+    next(); 
   }
 });
 

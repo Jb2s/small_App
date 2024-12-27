@@ -1,10 +1,7 @@
 <template>
-  <div class="modal-overlay" v-if="selectedTask || taskDeleted">
-    <div class="task-details border-l-4 border-blue-500 p-4 w-1/3">
-      <div v-if="taskDeleted">
-        <p>La tâche "{{ deletedTaskName }}" a été supprimée.</p>
-      </div>
-      <div v-else-if="selectedTask">
+  <div class="modal-overlay fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" v-if="selectedTask">
+    <div class="task-details border-l-4 border-blue-500 p-4 w-11/12 max-w-sm md:max-w-md lg:max-w-lg">
+      <div v-if="selectedTask">
         <h1 class="text-2xl mb-2 text-gray-800">
           Description de <span class="highlight">{{ selectedTask.title }}</span>
         </h1>
@@ -23,34 +20,19 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, defineProps, watch } from 'vue';
 
 const props = defineProps({
-  task: Object // Recevoir la tâche comme prop
+  task: Object
 });
 
 const selectedTask = ref(props.task);
-const taskDeleted = ref(false);
-const deletedTaskName = ref('');
 
-// Écouter les modifications de la prop task
 watch(() => props.task, (newTask) => {
   selectedTask.value = newTask;
 });
 
-// Fonction pour fermer la modal
-const closeModal = () => {
-  selectedTask.value = null;
-  taskDeleted.value = false;
-};
-
-// Fonction pour gérer la tâche supprimée
-const handleTaskDeletion = (taskName) => {
-  deletedTaskName.value = taskName;
-  taskDeleted.value = true;
-};
 </script>
 
 <style scoped>
@@ -60,11 +42,11 @@ const handleTaskDeletion = (taskName) => {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Couleur de fond semi-transparente */
+  background-color: rgba(0, 0, 0, 0.5); 
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Assurez-vous que le modal est au-dessus des autres contenus */
+  z-index: 1000; 
 }
 
 .highlight {

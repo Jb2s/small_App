@@ -1,6 +1,6 @@
 <template>
-  <div class="w-[65%] p-5">
-    <div class="add-task-form bg-gray-100 border border-gray-300 rounded-lg p-5 mb-5 shadow-sm">
+  <div class="p-5">
+    <div class="add-task-form bg-gray-100 border border-gray-300 rounded-lg p-5 mb-5 shadow-sm max-w-sm md:max-w-md lg:max-w-lg mx-auto">
       <input 
         v-model="newTask.text" 
         placeholder="Ajouter une nouvelle tâche" 
@@ -24,22 +24,26 @@
           type="file" 
           @change="onFileChange" 
           accept="image/*" 
-          class="mt-2 p-2" 
-        /><br>
+          class="mt-2 p-2 w-full" 
+        />
+        <br>
       </div>
       <button 
         @click="addNewTask" 
-        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition mt-5"
+        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition mt-5 w-full"
       >
         Ajouter Tâche
       </button>
     </div>
 
-    <div class="task-list bg-gray-100 border border-gray-300 rounded-lg p-5 shadow-sm">
+    <div class="task-list bg-gray-100 border border-gray-300 rounded-lg p-5 shadow-sm max-w-sm md:max-w-md lg:max-w-lg mx-auto">
       <h1 class="text-lg font-bold mb-4 text-gray-800">Liste des Tâches</h1>
       <div v-if="todos.length">
         <div v-for="(task, index) in todos" :key="task.id" class="mb-4">
-          <TodoTask :item="task.id" @click="openModal(task)" />
+          <TodoTask 
+            :item="task.id" 
+            @clickTask="openModal(task)" 
+          />
         </div>
       </div>
       <div v-else class="no-tasks text-center">
@@ -70,13 +74,13 @@ const selectedTask = ref(null);
 const todos = computed(() => todoStore.todos);
 
 const openModal = (task) => {
-  selectedTask.value = task; // Met à jour la tâche sélectionnée
-  isModalOpen.value = true; // Ouvre la modal
+  selectedTask.value = task;
+  isModalOpen.value = true; 
 };
 
 const closeModal = () => {
-  isModalOpen.value = false; // Ferme la modal
-  selectedTask.value = null; // Réinitialise la tâche sélectionnée
+  isModalOpen.value = false; 
+  selectedTask.value = null; 
 };
 
 const addDetailTask = () => {
@@ -87,7 +91,7 @@ const addDetailTask = () => {
 const addNewTask = () => {
   if (newTask.value.text.trim() === '') return;
   if (newTask.value.todoList.length > 0) {
-    newTask.value.todoList.pop(); // Supprime le dernier élément vide
+    newTask.value.todoList.pop(); 
   }
 
   const newTodoId = todoStore.addTodo(newTask.value.text, ''); 

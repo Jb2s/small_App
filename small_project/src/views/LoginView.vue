@@ -38,10 +38,10 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/authStore'; // Importer le store
+import { useAuthStore } from '../stores/authStore'; 
 
 const router = useRouter();
-const authStore = useAuthStore(); // Utiliser le store d'authentification
+const authStore = useAuthStore(); 
 const username = ref('');
 const password = ref('');
 const errorMessage = ref('');
@@ -49,13 +49,12 @@ const errorMessage = ref('');
 const handleLogin = async () => {
   errorMessage.value = '';
 
-  // Appeler la méthode de connexion du store
   const success = authStore.login(username.value, password.value);
   
   if (success) {
-    router.push('/home'); // Redirection vers HomeView si authentifié
+    router.push('/home'); 
   } else {
-    errorMessage.value = 'Identifiants invalides.'; // Message d'erreur
+    errorMessage.value = 'Identifiants invalides.'; 
   }
 };
 </script>

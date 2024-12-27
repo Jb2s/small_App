@@ -27,19 +27,18 @@ import { useTodoStore } from '@/stores/todoStore';
 const props = defineProps(['item']); 
 const emit = defineEmits();
 
-const todoStore = useTodoStore(); // Utiliser le store
-const task = todoStore.todos.find(todo => todo.id === props.item); // Trouver la tâche par ID
-
+const todoStore = useTodoStore(); 
+const task = todoStore.todos.find(todo => todo.id === props.item); 
 const handleTaskClick = () => {
-  emit('click', task); // Émettre l'événement avec la tâche
+  emit('clickTask', task); 
 };
 
 const toggleTask = (id) => {
-  todoStore.toggleTodo(id); // Méthode pour basculer l'état de la tâche
+  todoStore.toggleTodo(id);
 };
 
 const removeTask = (id) => {
-  todoStore.deleteTodo(id); // Méthode pour supprimer la tâche
+  todoStore.deleteTodo(id);
 };
 </script>
 

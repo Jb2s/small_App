@@ -1,38 +1,33 @@
 <template>
-    <nav class="bg-blue-500 p-4">
-      <div class="container mx-auto flex justify-between items-center">
+  <nav class="bg-blue-500 p-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <div class="flex items-center">
         <div class="text-white text-lg font-bold">Small App</div>
-        <ul class="flex space-x-4">
-          <li>
-            <div>
-              <button @click="handleLogout">Déconnexion</button>
-            </div>
-          </li>
-          <li>
-            <router-link to="/home" class="text-white hover:text-gray-200">Accueil</router-link>
-          </li>
-         
-        </ul>
+        <router-link to="/home" class="text-white hover:text-gray-200 ml-4">Accueil</router-link>
       </div>
-    </nav>
-  </template>
+      <div>
+        <button @click="handleLogout" class="text-white hover:text-gray-200"><i class="fas fa-sign-out-alt mr-2"></i>Déconnexion</button>
+      </div>
+    </div>
+  </nav>
+</template>
   
-  <script setup>
-  import { useAuthStore } from '@/stores/authStore';
-  import { useRouter } from 'vue-router';
+<script setup>
+import { useAuthStore } from '@/stores/authStore';
+import { useRouter } from 'vue-router';
 
-  const authStore = useAuthStore();
-  const router = useRouter();
+const authStore = useAuthStore();
+const router = useRouter();
 
-  const handleLogout = () => {
-    authStore.logout(); // Appel de la méthode de déconnexion
-    router.push('/'); // Rediriger vers la page de connexion
+const handleLogout = () => {
+  authStore.logout(); 
+  router.push('/'); 
 };
-  </script>
-  
-  <style scoped>
-  
-  nav {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  </style>
+</script>
+
+<style scoped>
+
+nav {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+</style>
