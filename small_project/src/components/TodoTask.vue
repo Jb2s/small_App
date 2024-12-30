@@ -30,7 +30,7 @@ const emit = defineEmits();
 const todoStore = useTodoStore(); 
 const task = todoStore.todos.find(todo => todo.id === props.item); 
 const handleTaskClick = () => {
-  emit('clickTask', task); 
+  emit('clickOnTask', task); 
 };
 
 const toggleTask = (id) => {

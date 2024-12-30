@@ -42,7 +42,7 @@
         <div v-for="(task, index) in todos" :key="task.id" class="mb-4">
           <TodoTask 
             :item="task.id" 
-            @clickTask="openModal(task)" 
+            @clickOnTask="openModal(task)" 
           />
         </div>
       </div>
@@ -51,7 +51,6 @@
         <p>Aucune tâche disponible.</p>
       </div>
     </div>
-
     <Modal 
       v-if="isModalOpen" 
       :task="selectedTask" 

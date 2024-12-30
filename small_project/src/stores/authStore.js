@@ -4,6 +4,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     users: [],
     authenticatedUser: null,
+    isUserAuthenticated: false
   }),
   actions: {
     loadUsers() {
@@ -17,6 +18,7 @@ export const useAuthStore = defineStore('auth', {
         user.is_authenticated = true;
         localStorage.setItem('users', JSON.stringify(this.users));
         this.authenticatedUser = user;
+        this.isUserAuthenticated = true;
         return true; 
       }
       return false; 

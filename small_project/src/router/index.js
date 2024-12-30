@@ -23,14 +23,14 @@ const router = createRouter({
 });
 
 
-
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   authStore.loadUsers(); 
 
-  const isAuthenticated = authStore.isAuthenticated;
+  const _isUserAuthenticated = authStore.isUserAuthenticated;
+  console.log('_isUserAuthenticated',_isUserAuthenticated)
 
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  if (to.meta.requiresAuth && !_isUserAuthenticated) {
     next('/'); 
   } else {
     next(); 

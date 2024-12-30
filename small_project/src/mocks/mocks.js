@@ -29,7 +29,7 @@ const users = [
             {
                 id: generateTodoListId(),
                 title: 'Task1',
-                description: 'Description Task1', 
+                // description: 'Description Task1', 
                 status: false,
                 todoTask: [
                     { id: generateTodoTaskId(), titre: 'Detail1 Task1 User1' }, 
@@ -39,7 +39,7 @@ const users = [
             {
                 id: generateTodoListId(),
                 title: 'Task2',
-                description: 'Description Task2',
+                // description: 'Description Task2',
                 status: false,
                 todoTask: [
                     { id: generateTodoTaskId(), titre: 'Detail1 Task2 User1' }, 
@@ -59,7 +59,7 @@ const users = [
           {
               id: generateTodoListId(),
               title: 'Task1',
-              description: 'Description Task1', 
+            //   description: 'Description Task1', 
               status: false,
               todoTask: [
                   { id: generateTodoTaskId(), titre: 'Detail1 Task1 User2' }, 
@@ -69,7 +69,7 @@ const users = [
           {
               id: generateTodoListId(),
               title: 'Task2',
-              description: 'Description Task2',
+            //   description: 'Description Task2',
               status: false,
               todoTask: [
                   { id: generateTodoTaskId(), titre: 'Detail1 Task2 User2' }, 

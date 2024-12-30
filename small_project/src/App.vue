@@ -8,6 +8,7 @@ import { initData } from './mocks/mocks';
 const route = useRoute();
 
 const showNavbar = ref(false); 
+
   onBeforeMount(() => {
     initData();
 })
