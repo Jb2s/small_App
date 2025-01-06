@@ -1,13 +1,17 @@
 const sequelize = require('../config/database');
-const User = require('./user');
-const TodoList = require('./todolist');
+const User = require('./User');
+const Task = require('./Task');
+const SubTask = require('./Subtask');
 
-// Définir les relations
-User.hasMany(TodoList, { foreignKey: 'userId' });
-TodoList.belongsTo(User, { foreignKey: 'userId' });
+User.hasMany(Task, { foreignKey: 'userId', as: 'tasks' });
+Task.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+Task.hasMany(SubTask, { foreignKey: 'taskId', as: 'subTasks' });
+SubTask.belongsTo(Task, { foreignKey: 'taskId', as: 'task' });
 
 module.exports = {
   sequelize,
   User,
-  TodoList,
+  Task,
+  SubTask,
 };
