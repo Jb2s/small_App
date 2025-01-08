@@ -2,7 +2,7 @@ const SubTask = require('../models/Subtask');
 const Task = require('../models/Task');
 
 const addSubTaskToTask = async (req, res) => {
-  const taskId = req.params.taskid; 
+  const taskId = req.params.taskId; 
   const userId = req.user.id; 
   const { title } = req.body; 
 
