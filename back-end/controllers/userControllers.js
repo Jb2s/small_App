@@ -59,4 +59,7 @@ const authenticateUser = async (req, res) => {
     }
   };
 
-module.exports = { addUser, authenticateUser };
+module.exports = { 
+  addUser, 
+  authenticateUser,
+ };
