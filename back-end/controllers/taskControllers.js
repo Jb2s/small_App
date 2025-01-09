@@ -105,25 +105,35 @@ const deleteUserTask = async (req, res) => {
   const userId = req.user.id; 
 
   try {
-    const task = await Task.findOne({
-      where: {
-        id: taskId,
-        userId: userId, 
-      },
-    });
+      const task = await Task.findOne({
+          where: {
+              id: taskId,
+              userId: userId, 
+          },
+          include: [{
+              model: SubTask, 
+              as: 'subTasks', 
+          }],
+      });
 
-    if (!task) {
-      return res.status(404).json({ message: 'Tâche non trouvée.' });
-    }
+      if (!task) {
+          return res.status(404).json({ message: 'Tâche non trouvée.' });
+      }
 
-    await task.destroy(); 
+      await Subtask.destroy({
+          where: {
+              parentId: taskId, 
+          },
+      });
 
-    res.status(204).send(); 
+      await task.destroy(); 
+
+      res.status(204).send(); 
   } 
   catch (error) 
   {
-    console.error('Erreur lors de la suppression de la tâche:', error);
-    res.status(500).json({ message: 'Erreur interne du serveur.' }); 
+      console.error('Erreur lors de la suppression de la tâche:', error);
+      res.status(500).json({ message: 'Erreur interne du serveur.' }); 
   }
 };
 
