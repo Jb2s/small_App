@@ -1,3 +1,4 @@
+require('dotenv').config();
 const jwt = require('jsonwebtoken'); 
 const { User } = require('../models'); 
 
@@ -11,10 +12,12 @@ const authenticate = (req, res, next) => {
 
   try {
     
-    const decoded = jwt.verify(token, '4h2#jZ8LkPz!n9s@QeR1vXwT7uY0'); 
+    const decoded = jwt.verify(token, process.env.SECRET_KEY); 
     req.user = { id: decoded.id };  
     next(); 
-  } catch (error) {
+  }
+   catch (error) 
+  {
     console.error('Erreur d\'authentification:', error);
     return res.status(401).json({ message: 'Token invalide.' });
   }
