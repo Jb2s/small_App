@@ -1,17 +1,26 @@
 require('dotenv').config();
+const validateEmail = require('../utils/validatorsUtils');
 const User = require('../models/User'); 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const addUser = async (req, res) => {
   const { username, email, password } = req.body;
-
+  console.log('req.body', req.body);
   if (!username || !email || !password) {
     return res.status(400).json({
        message: 'Tous les champs sont requis.', 
        isError: true, 
        code: 'U000' });
   }
+
+  if (!validateEmail(email)) {
+    return res.status(400).json({ 
+      message: 'Format d\'email invalide.',
+      isError: true,
+      code: 'U001' });
+  } 
+
 
   try {
     const existingUser = await User.findOne({ where: { email } });
@@ -44,7 +53,14 @@ const addUser = async (req, res) => {
 
 const authenticateUser = async (req, res) => {
     const { email, password } = req.body;
-  
+    console.log('email', email);
+    if (!validateEmail(email)) {
+      return res.status(400).json({ 
+        message: 'Format d\'email invalide.',
+        isError: true,
+        code: 'U001' });
+    }
+
     try {
       const user = await User.findOne({ where: { email } });
   

@@ -7,7 +7,7 @@ const port = process.env.PORT;
 const corsOptions = {
   origin: process.env.URL_FRONT_ORIGIN,
   methods: ['GET', 'POST', 'PUT', 'DELETE'], 
-  allowedHeaders: ['Content-Type', 'Authorization'], 
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 };
 
 const { sequelize, User, Task, SubTask } = require('./models');
