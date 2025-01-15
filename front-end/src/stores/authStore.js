@@ -8,7 +8,6 @@ export const useAuthStore = defineStore('auth', {
   }),
   actions: {
     confirmRecieveToken(receiveToken) {
-      localStorage.setItem('token', receiveToken);
       this.isUserAuthenticated = true;
       this.token = receiveToken; 
     },

@@ -8,6 +8,10 @@ SubTask.init({
     type: DataTypes.STRING,
     allowNull: false,
   },
+  completed: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
   taskId: {
     type: DataTypes.INTEGER,
     allowNull: false,

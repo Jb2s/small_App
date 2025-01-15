@@ -6,12 +6,14 @@ const {
     getSubTasksByTaskId,
     updateSubTaskByTaskId,
     deleteSubTaskByTaskId,
+    toggleSubTask,
 } = require('../controllers/subtaskControllers');
 
 
 router.post('/:taskid/addSubtasks', addSubTaskToTask); 
-router.get('/:taskId/getSubtasks', getSubTasksByTaskId); 
+router.get('/:taskId/getSubtasks', getSubTasksByTaskId);  
 router.put('/:taskId/updateSubtasks/:subtaskId', updateSubTaskByTaskId); 
+router.put('/:taskId/toggleSubtasks/:subtaskId', toggleSubTask); 
 router.delete('/:taskId/deleteSubtasks/:subtaskId', deleteSubTaskByTaskId); 
 
 

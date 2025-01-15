@@ -6,15 +6,17 @@ const {
     addUserTask, 
     getTaskDetails,
     updateUserTask,
-    deleteUserTask, 
+    deleteUserTask,
+    toggleTask, 
 
 } = require('../controllers/taskControllers');
 
-router.get('/', getUserTasks);
-router.post('/addTask', addUserTask); 
-router.get('/getTaskDetails/:taskid', getTaskDetails);
-router.put('/updateTask/:taskid', updateUserTask);
-router.delete('/deleteTask/:taskid', deleteUserTask);
+router.get('/getTasks', getUserTasks);
+router.post('/addTask', addUserTask);
+router.put('/:taskId/toggle', toggleTask);
+router.get('/getTaskDetails/:taskId', getTaskDetails);
+router.put('/updateTask/:taskId', updateUserTask);
+router.delete('/deleteTask/:taskId', deleteUserTask);
  
 
 module.exports = router;

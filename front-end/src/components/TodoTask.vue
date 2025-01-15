@@ -1,45 +1,109 @@
 <template>
   <div class="task-card flex bg-white border border-gray-300 rounded-lg shadow-md p-5 transition-shadow duration-200 hover:shadow-lg">
-    <img v-if="task.image" class="task-image w-20 h-20 rounded-md mr-4" :src="task.image" alt="Image de tâche" />
     <div class="task-content flex flex-col flex-grow">
-      <span class="task-status inline-block px-2 py-1 rounded text-white mb-2" :class="{ 'bg-green-500': task.status, 'bg-yellow-400': !task.status }">
-        {{ task.status ? 'Complète' : 'Planifiée' }}
+      <span class="inline-block w-full px-2 py-1 text-md text-white mb-2" 
+            :class="{ 'bg-green-500': task.completed, 'bg-yellow-400': !task.completed }">
+        <i>{{ task.completed ? 'Complète' : 'Planifiée' }}</i>
       </span>
-      <h3 class="task-title text-lg text-gray-900 cursor-pointer" @click="handleTaskClick">{{ task.title }}</h3>
-      <p v-if="task.todoTask.length > 0" class="task-subtasks-count text-gray-600">{{ task.todoTask.length }} todo</p>
-      <p v-else class="task-subtasks-count text-gray-600">Aucune todo</p>
+      <h5  class="task-title text-lg text-gray-900 cursor-pointer" :class="{ 'line-through': task.completed }" @click="handleTaskClick"><i>{{ task.title }}</i></h5>
+      <h6 class="task-title text-md text-gray-700 cursor-pointer" @click="handleTaskClick"><i>{{ task.description }}</i></h6>
+      <p class="task-subtasks-count text-sm text-gray-600">
+        <i>{{ task.subtasks && task.subtasks.length > 0 ? task.subtasks.length + ' sous tâche(s)' : 'Aucune tâche' }}</i>
+      </p>
       <div class="task-actions flex justify-end gap-2">
-        <button @click.stop="toggleTask(task.id)" class="btn bg-blue-500 text-white rounded px-2 py-1 hover:bg-blue-600">
+        <button @click.stop="handleToggleTask" class="btn bg-blue-500 text-white rounded-full w-7 h-7 flex items-center justify-center px-2 py-1 hover:bg-blue-600">
           <i class="fas fa-check"></i>
         </button>
-        <button @click.stop="removeTask(task.id)" class="red-button bg-red-500 text-white rounded px-2 py-1 hover:bg-red-600">
-          <i class="fas fa-trash"></i>
-        </button>
+        <button @click.stop="handleLaunchEditTask" class="red-button bg-yellow-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-yellow-600 transition">
+          <i class="fas fa-edit"></i> 
+        </button> 
+        <button @click.stop="handleRemoveTask" class="red-button bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 transition">
+          <i class="fas fa-times"></i> 
+        </button>          
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
-import { useTodoStore } from '@/stores/todoStore';
+import { defineProps, defineEmits, ref } from 'vue';
+import { useAuthStore } from '@/stores/authStore';
+import { toggleTask, removeTask } from '@/services/taskServices';
+import { manageErrorCodeTaskAndSubtask } from '@/utils/manageUtils';
+import { useTaskStore } from '@/stores/taskStore';
 
 const props = defineProps(['item']); 
-const emit = defineEmits();
+const emit = defineEmits(['clickOnTask', 'toggle', 'edit', 'remove']);
+const authStore = useAuthStore();
+const task = ref(props.item); 
+const errorCode = ref('');
+const errorMessage = ref('');
+const taskStore = useTaskStore();
 
-const todoStore = useTodoStore(); 
-const task = todoStore.todos.find(todo => todo.id === props.item); 
 const handleTaskClick = () => {
-  emit('clickOnTask', task); 
+  taskStore.setSelectedTask(task.value);
+  emit('clickOnTask', task.value); 
 };
 
-const toggleTask = (id) => {
-  todoStore.toggleTodo(id);
+const handleToggleTask = async () => {
+  const token = authStore.getToken; 
+
+  if (!token) {
+    console.error('Token non trouvé');
+    alert('Veuillez vous connecter pour continuer.'); 
+    return; 
+  }
+
+  try {
+    const responseToggleTask = await toggleTask(task.value.id, token); 
+
+    if (responseToggleTask) {
+      task.value.completed = !task.value.completed;
+      console.log('responseToggleTask >> ', responseToggleTask);
+      taskStore.updateTodoList(responseToggleTask.taskId, responseToggleTask.subtasks);
+      console.log('task.value >> ', task.value);
+      emit('toggle');
+    }
+  } catch (error) {
+    const errorResponse = manageErrorCodeTaskAndSubtask(error.code, error.message);
+    errorCode.value = errorResponse.code; 
+    errorMessage.value = errorResponse.message; 
+    console.error('handleToggleTask.error >> ', error);
+    
+    if (errorCode.value) {
+      alert(errorMessage.value); 
+    }
+  }
 };
 
-const removeTask = (id) => {
-  todoStore.deleteTodo(id);
+const handleLaunchEditTask = async () => {
+  emit('edit', task.value.id);
 };
+
+const handleRemoveTask = async () => {
+  const token = authStore.getToken; 
+
+  if (!token) {
+    console.error('Token non trouvé');
+    alert('Veuillez vous connecter pour continuer.'); 
+    return; 
+  }
+
+  try {
+    await removeTask(task.value.id, token); 
+    emit('remove', task.value.id); 
+  } catch (error) {
+    const errorResponse = manageErrorCodeTaskAndSubtask(error.code, error.message);
+    errorCode.value = errorResponse.code; 
+    errorMessage.value = errorResponse.message; 
+    console.error('handleRemoveTask.error >> ', error);
+    
+    if (errorCode.value) {
+      alert(errorMessage.value); 
+    }
+  }
+};
+
 </script>
 
 <style scoped>
@@ -47,5 +111,8 @@ const removeTask = (id) => {
   width: 80px; 
   height: auto; 
   border-radius: 0.5rem;
+}
+.line-through {
+    text-decoration: line-through; 
 }
 </style>
