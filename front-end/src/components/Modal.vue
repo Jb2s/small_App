@@ -55,7 +55,7 @@ const props = defineProps({
 console.log('props.task >> ', props.task);
 const authStore = useAuthStore();
 const taskStore = useTaskStore();
-const emit = defineEmits(['toggle', 'remove']);
+const emit = defineEmits(['toggle', 'remove', 'close']);
 const selectedTask = ref(props.task);
 
 watch(() => taskStore.selectedTask, (thisTask) => {
@@ -71,8 +71,8 @@ const handletoggleSubTask = async (subtask) => {
     const responseSubTask = await toggleSubTask(selectedTask.value.id, subtask.id, token);
     if (responseSubTask) {
       console.log('responseSubTask >> ', responseSubTask);
-      taskStore.updateTodo(responseSubTask.taskId, responseSubTask)
-      subtask.completed = !subtask.completed; 
+      subtask.completed = responseSubTask.subTask.completed;
+      taskStore.updateTask(responseSubTask.task.id,responseSubTask.subTask)
       emit('toggle'); 
     }
     
@@ -88,10 +88,10 @@ const handleRemovesubTask = async (subtask) => {
   console.log('token >> ', token);
   if (!token) return console.error('Token non trouvé');
   try {
+    removeSubTaskFromList(selectedTask.value.id, subtask.id)
     const responseSubTask = await removeSubTask(selectedTask.value.id, subtask.id, token);
     if (responseSubTask) {
-      emit('remove',selectedTask.value.id, subtask.id); 
-      
+      console.log('responseSubTask',responseSubTask)
     }
     
   } catch (error) {
@@ -99,6 +99,13 @@ const handleRemovesubTask = async (subtask) => {
     console.error('handleAddNewTask.error >> ', error);
     alert(errorResponse.message);
   }
+};
+
+const removeSubTaskFromList = (taskId, subtaskId) => {
+  const task = taskStore.taskList.find(t => t.id === taskId); 
+    if (task) {
+      task.subtasks = task.subtasks.filter(subtask => subtask.id !== subtaskId); 
+    }
 };
 
 </script>

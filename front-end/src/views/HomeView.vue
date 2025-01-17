@@ -1,23 +1,25 @@
 <template>
   <div class="p-5">
-    <button class="mb-3 rounded-md px-3 py-1 bg-red-600 text-white font-bold" v-if="isEditing" @click="handleSuspendEditTask">X</button>
+    <button class="mb-3 rounded-lg px-3 py-1 bg-red-500 text-white font-bold" v-if="isEditing" @click="handleSuspendEditTask">
+      <i class="fas fa-times"></i> 
+    </button>
     <div :class="['add-task-form', 'bg-gray-100', 'border', 'border-gray-300', 'rounded-lg', 'p-5', 'mb-4', 'shadow-sm', 'w-full', 'mx-auto',
            { 'editing': isEditing }]" class="max-w-4xl mb-2">
+      <label for="tâche" class="block text-sm font-medium text-gray-700">Tâche</label>
       <input 
         v-model="newTask.title" 
-        placeholder="Ajouter une todo à votre tâche" 
         class="border border-gray-300 p-2 rounded w-full" 
       />
+      <label for="Description" class="block text-sm font-medium text-gray-700">Description</label>
       <textarea 
         v-model="newTask.description" 
-        placeholder="Description de la tâche" 
         class="border border-gray-300 p-2 rounded w-full mt-3" 
       ></textarea>
       <div class="mt-2">
         <div v-for="(subTask, index) in newTask.subtasks" :key="index" class="mb-3">
+          <label for="Sous tâche" class="block text-sm font-medium text-gray-700">Sous tâche</label>
           <input 
             v-model="subTask.title" 
-            placeholder="Sous tâche" 
             class="border border-gray-300 p-2 rounded w-full" 
           />
         </div>
@@ -25,44 +27,37 @@
         <div class="flex space-x-3 w-full"> 
           <button 
             @click="handleAddDetailTask" 
-            class="bg-blue-500 text-white text-sm px-4 py-2 rounded-full hover:bg-blue-600 transition flex-[0.4]" 
+            class="bg-blue-500 text-white text-sm px-4 py-2 rounded-sm hover:bg-blue-600 transition flex-[0.4]" 
           >
             Ajouter une todo
           </button>
           <button @click="handleSaveNewTask" 
-            class="bg-green-500 text-white text-sm px-4 py-2 rounded-full hover:bg-green-600 transition flex-[0.6]" 
+            class="bg-green-500 text-white text-sm px-4 py-2 rounded-sm hover:bg-green-600 transition flex-[0.6]" 
           >
             Sauvegarder
           </button>
-          <!-- <button v-if = "isEditing"
-            @click="handleEditTask" 
-            class="bg-blue-500 text-white text-sm px-4 py-2 rounded-full hover:bg-blue-600 transition flex-[0.4]" 
-          >
-            Editer la tache
-          </button>
-          <button v-if = "isEditing" 
-            @click="handleSuspendEditTask" 
-            class="bg-green-500 text-white text-sm px-4 py-2 rounded-full hover:bg-green-600 transition flex-[0.6]" 
-          >
-            Suspendre l'édition
-          </button> -->
-          
         </div>
       </div>
     </div>
 
     <div class="task-list bg-gray-100 border border-gray-300 rounded-lg p-5 shadow-sm w-full mx-auto">
-      <h1 class="text-lg font-bold mb-4 text-center text-gray-800">Liste des Tâches</h1>
+      <div class="flex flex-col items-center mb-4">
+        <h1 class="text-lg font-bold text-gray-800">Liste des Tâches ({{ per }}% Complètes)</h1>
+        <div class="w-40 bg-yellow-200 rounded-full h-1.5 mt-2">
+            <div class="bg-green-400 h-1.5 rounded-full" :style="{ width: per + '%' }"></div>
+        </div>
+    </div>      
       <div v-if="taskStore.taskList.length">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div v-for="(task, index) in taskStore.taskList" :key="task.id" class="mb-4">
-            <TodoTask 
-              :item="task" 
-              @clickOnTask="openModal(task)"
-              @edit="loadEditTask"
-              @remove="removeTaskFromList"
-
-            />
+        <div class=" justify-center">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div v-for="(task) in taskStore.taskList" :key="task.id" class="mb-4">
+              <TodoTask 
+                :item="task" 
+                @clickOnTask="openModal(task)"
+                @edit="loadEditTask"
+                @remove="removeTaskFromList"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -75,30 +70,27 @@
       v-if="isModalOpen" 
       :task="taskStore.selectedTask" 
       @close="closeModal" 
-      @toggle="loadTasks"
-      @remove="removeSubTaskFromList"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted,computed  } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { addTaskWithSubTasks, getUserTasks, updateSubTasks } from '@/services/taskServices';
 import { manageErrorCodeTaskAndSubtask } from '@/Utils/manageUtils';
-import TodoTask from '@/components/TodoTask.vue'; 
+import TodoTask from '@/components/Task.vue'; 
 import Modal from '@/components/Modal.vue'; 
 import { useTaskStore } from '@/stores/taskStore';
 
 const authStore = useAuthStore();
 const newTask = ref({ title: '', description: '', subtasks: [{ title: '' }] });
-const tasks = ref([]); 
 const selectedTask = ref(null);
 const isModalOpen = ref(false);
 const editingTask = ref([]);
 const isEditing = ref(false);
 const taskStore = useTaskStore();
-
+const per = computed(() => taskStore.getPercentage);
 const openModal = (task) => {
   selectedTask.value = task;
   isModalOpen.value = true; 
@@ -124,15 +116,17 @@ const handleSaveNewTask = async () => {
     taskId: newTask.value.taskId,
     title: newTask.value.title,
     description: newTask.value.description,
-    subtasks: newTask.value.subtasks.map(item => ({ 
+    subtasks: newTask.value.subtasks
+    .filter(item => item.title && item.title.trim() !== '')
+    .map(item => ({ 
       "id": item.id,
       "title": item.title,
       "completed": item.completed,
       "taskId": item.taskId
     }))
   }
-
   console.log("payload", payload)
+  console.log("percentage after new task", taskStore.CalculateCompletionPercentage())
   try {
     let response = null;
     if(!isEditing.value){
@@ -155,6 +149,7 @@ const handleSaveNewTask = async () => {
   } finally {
     isEditing.value = false;
     await loadTasks()
+    taskStore.CalculateCompletionPercentage();
     resetNewTask();
   }
 };
@@ -201,12 +196,6 @@ const loadTasks = async () => {
 
 const removeTaskFromList = (id) => {
   taskStore.taskList = taskStore.taskList.filter(task => task.id !== id); 
-};
-const removeSubTaskFromList = (taskId, subtaskId) => {
-  const task = taskStore.taskList.find(t => t.id === taskId); 
-    if (task) {
-      task.subtasks = task.subtasks.filter(subtask => subtask.id !== subtaskId); 
-    }
 };
 
 const resetNewTask = () => {

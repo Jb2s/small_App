@@ -2,7 +2,7 @@
   <div class="task-card flex bg-white border border-gray-300 rounded-lg shadow-md p-5 transition-shadow duration-200 hover:shadow-lg">
     <div class="task-content flex flex-col flex-grow">
       <span class="inline-block w-full px-2 py-1 text-md text-white mb-2" 
-            :class="{ 'bg-green-500': task.completed, 'bg-yellow-400': !task.completed }">
+            :class="{ 'bg-green-500 rounded-sm': task.completed, 'bg-yellow-400 rounded-sm': !task.completed }">
         <i>{{ task.completed ? 'Complète' : 'Planifiée' }}</i>
       </span>
       <h5  class="task-title text-lg text-gray-900 cursor-pointer" :class="{ 'line-through': task.completed }" @click="handleTaskClick"><i>{{ task.title }}</i></h5>
@@ -33,7 +33,7 @@ import { manageErrorCodeTaskAndSubtask } from '@/utils/manageUtils';
 import { useTaskStore } from '@/stores/taskStore';
 
 const props = defineProps(['item']); 
-const emit = defineEmits(['clickOnTask', 'toggle', 'edit', 'remove']);
+const emit = defineEmits(['clickOnTask', 'remove', 'edit']);
 const authStore = useAuthStore();
 const task = ref(props.item); 
 const errorCode = ref('');
@@ -50,7 +50,7 @@ const handleToggleTask = async () => {
 
   if (!token) {
     console.error('Token non trouvé');
-    alert('Veuillez vous connecter pour continuer.'); 
+    console.log('Veuillez vous connecter pour continuer.'); 
     return; 
   }
 
@@ -58,11 +58,9 @@ const handleToggleTask = async () => {
     const responseToggleTask = await toggleTask(task.value.id, token); 
 
     if (responseToggleTask) {
-      task.value.completed = !task.value.completed;
-      console.log('responseToggleTask >> ', responseToggleTask);
-      taskStore.updateTodoList(responseToggleTask.taskId, responseToggleTask.subtasks);
-      console.log('task.value >> ', task.value);
-      emit('toggle');
+      console.log('responseToggleTask', responseToggleTask)
+      task.value.completed = responseToggleTask.task.completed;
+      taskStore.updateSubtaskList(responseToggleTask.task, responseToggleTask.subTasks);
     }
   } catch (error) {
     const errorResponse = manageErrorCodeTaskAndSubtask(error.code, error.message);
@@ -71,7 +69,7 @@ const handleToggleTask = async () => {
     console.error('handleToggleTask.error >> ', error);
     
     if (errorCode.value) {
-      alert(errorMessage.value); 
+      console.log(errorMessage.value); 
     }
   }
 };
@@ -85,7 +83,7 @@ const handleRemoveTask = async () => {
 
   if (!token) {
     console.error('Token non trouvé');
-    alert('Veuillez vous connecter pour continuer.'); 
+    console.log('Veuillez vous connecter pour continuer.'); 
     return; 
   }
 
@@ -99,7 +97,7 @@ const handleRemoveTask = async () => {
     console.error('handleRemoveTask.error >> ', error);
     
     if (errorCode.value) {
-      alert(errorMessage.value); 
+      console.log(errorMessage.value); 
     }
   }
 };

@@ -1,45 +1,70 @@
-import { updateSubTasks } from '@/services/taskServices';
 import { defineStore } from 'pinia';
 
-export const useTaskStore = defineStore('todo', {
+export const useTaskStore = defineStore('todoList', {
   state: () => ({
     taskList: [],
-    selectedTask: null, 
+    selectedTask: null,
+    percentage: null, 
   }),
   actions: {
-    loadTodos() {
-      console.log('loadTodos from store');
-    },
+    
     setTaskList(taskList) {
       this.taskList = taskList;
+      console.log('taskList after set task list', taskList)
+      this.CalculateCompletionPercentage();
+
     },
-    updateTodo(taskId, todo) {
+    updateTask(taskId, todoList) {
       this.taskList.forEach(task => {
-        if(task.id === taskId){
-          task.subtasks.forEach(item => {
-            if(item.id === todo.id){
-              item = todo;
+        if (task.id == taskId) {
+          task.completed = true; 
+          task.subtasks.forEach((item, index) => {
+            if (item.id == todoList.id) {
+              task.subtasks[index] = todoList; 
             }
           });
+          const allSubtasksCompleted = task.subtasks.every(subtask => subtask.completed);
+          task.completed = allSubtasksCompleted; 
+          console.log('Tâche mise à jour:', task);
+          this.CalculateCompletionPercentage();
+
         }
       });
     },
-    updateTodoList(taskId, todoList) {
+    updateSubtaskList(taskData, todoList) {
       this.taskList.forEach(task => {
-        if(task.id === taskId){
+        if(task.id == taskData.id){
+          task.completed = taskData.completed;
           task.subtasks = todoList;
         }
       });
-    },
-    deleteTodo(taskId, todo) {
-      this.taskList.forEach(task => {
-        if(task.id === taskId){
-          task.subtasks = task.subtasks.filter(item => item.id !== todo.id);
-        }
-      });
+      console.log('TaskStore.OUT', this.taskList)
+      this.CalculateCompletionPercentage();
+
     },
     setSelectedTask(task) {
       this.selectedTask = task;
-    }
+    },
+    CalculateCompletionPercentage() {
+      const totalTasks = this.taskList.length; 
+      const completedTasks = this.taskList.filter(task => task.completed == true).length;
+      console.log('UPDATE DATA', this.taskList) 
+      console.log('UPDATE LENGTH', this.taskList.length)
+      console.log('completedTasks', this.taskList.filter(task => task.completed == true).length)
+      console.log('NONE completedTasks', this.taskList.filter(task => task.completed == false).length)
+
+      this.percentage = totalTasks === 0 ? 0 : (completedTasks / totalTasks) * 100;
+      console.log('percentage',this.percentage);
+      this.percentage = Math.round(this.percentage * 100) / 100;
+  },
+  deleteTask(taskId) {
+    this.taskList = this.taskList.filter(task => task.id !== taskId);
+    console.log(`Tâche avec l'ID ${taskId} supprimée.`);
+    this.CalculateCompletionPercentage();
+
+  },
+  },
+  getters: {
+    getPercentage: (state) => state.percentage,
   },
 });

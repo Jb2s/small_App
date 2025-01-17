@@ -184,7 +184,7 @@ const getSubTasksByTaskId = async (req, res) => {
       await subTask.save();
       await task.save();
   
-      res.status(200).json(subTask);
+      res.status(200).json({task,subTask});
     } catch (error) {
       console.error('Erreur lors du basculement de la sous-tâche:', error);
       res.status(500).json({
