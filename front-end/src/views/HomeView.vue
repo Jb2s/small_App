@@ -8,31 +8,28 @@
       <label for="tâche" class="block text-sm font-medium text-gray-700">Tâche</label>
       <input 
         v-model="newTask.title" 
-        class="border border-gray-300 p-2 rounded w-full" 
+        class="border border-indigo-100 p-2 rounded w-full focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none'," 
       />
       <label for="Description" class="block text-sm font-medium text-gray-700">Description</label>
       <textarea 
         v-model="newTask.description" 
-        class="border border-gray-300 p-2 rounded w-full mt-3" 
+        class="border border-indigo-100 p-2 rounded w-full mt-3 focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none'," 
       ></textarea>
       <div class="mt-2">
-        <div v-for="(subTask, index) in newTask.subtasks" :key="index" class="mb-3">
+        <div v-for="(subTask, index) in newTask.subTasks" :key="index" class="mb-3">
           <label for="Sous tâche" class="block text-sm font-medium text-gray-700">Sous tâche</label>
           <input 
             v-model="subTask.title" 
-            class="border border-gray-300 p-2 rounded w-full" 
+            class="border border-indigo-100 p-2 rounded w-full focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none'," 
           />
         </div>
         
         <div class="flex space-x-3 w-full"> 
-          <button 
-            @click="handleAddDetailTask" 
-            class="bg-blue-500 text-white text-sm px-4 py-2 rounded-sm hover:bg-blue-600 transition flex-[0.4]" 
-          >
+          <button @click="handleAddDetailTask" class="bg-indigo-200 text-indigo-900 text-sm px-4 py-2 rounded-sm hover:bg-indigo-300 transition flex-[0.4]" >
             Ajouter une todo
           </button>
           <button @click="handleSaveNewTask" 
-            class="bg-green-500 text-white text-sm px-4 py-2 rounded-sm hover:bg-green-600 transition flex-[0.6]" 
+            class="bg-indigo-200 text-indigo-900 text-sm px-4 py-2 rounded-sm hover:bg-indigo-300 transition flex-[0.6]" 
           >
             Sauvegarder
           </button>
@@ -44,7 +41,7 @@
       <div class="flex flex-col items-center mb-4">
         <h1 class="text-lg font-bold text-gray-800">Liste des Tâches ({{ per }}% Complètes)</h1>
         <div class="w-40 bg-yellow-200 rounded-full h-1.5 mt-2">
-            <div class="bg-green-400 h-1.5 rounded-full" :style="{ width: per + '%' }"></div>
+          <div class="bg-green-300 h-1.5 rounded-full" :style="{ width: per + '%', transition: 'all 0.3s ease' }"></div>
         </div>
     </div>      
       <div v-if="taskStore.taskList.length">
@@ -55,7 +52,6 @@
                 :item="task" 
                 @clickOnTask="openModal(task)"
                 @edit="loadEditTask"
-                @remove="removeTaskFromList"
               />
             </div>
           </div>
@@ -77,22 +73,23 @@
 <script setup>
 import { ref, onMounted,computed  } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
-import { addTaskWithSubTasks, getUserTasks, updateSubTasks } from '@/services/taskServices';
+import { addTaskWithSubTasks, getUserTasks, updateTaskWithSubTasks } from '@/services/taskServices';
 import { manageErrorCodeTaskAndSubtask } from '@/Utils/manageUtils';
 import TodoTask from '@/components/Task.vue'; 
 import Modal from '@/components/Modal.vue'; 
 import { useTaskStore } from '@/stores/taskStore';
 
 const authStore = useAuthStore();
-const newTask = ref({ title: '', description: '', subtasks: [{ title: '' }] });
-const selectedTask = ref(null);
+const newTask = ref({ title: '', description: '', subTasks: [{ title: '' }] });
 const isModalOpen = ref(false);
-const editingTask = ref([]);
 const isEditing = ref(false);
 const taskStore = useTaskStore();
 const per = computed(() => taskStore.getPercentage);
 const openModal = (task) => {
-  selectedTask.value = task;
+  console.log('task', task)
+  const st = { ...Array.from(taskStore.taskList).find(t => t.id === task.id)}
+  console.log('st', st)
+  taskStore.selectedTask = task;
   isModalOpen.value = true; 
 };
 
@@ -101,9 +98,13 @@ const closeModal = () => {
 };
 
 const handleAddDetailTask = () => {
-  const lastSubTask = newTask.value.subtasks.at(-1);
-  if (lastSubTask && lastSubTask.title.trim()) {
-    newTask.value.subtasks.push({ title: '' }); 
+  const lastSubTask = newTask.value.subTasks.at(-1);
+  console.log('lastSubTask', lastSubTask)
+  if (!lastSubTask || !lastSubTask.title.trim()) {
+    console.log("La dernière sous-tâche est vide. Veuillez la remplir avant d'ajouter une nouvelle sous-tâche.");
+    return;
+  } else {
+    newTask.value.subTasks.push({ title: '' });
   }
 };
 
@@ -116,7 +117,8 @@ const handleSaveNewTask = async () => {
     taskId: newTask.value.taskId,
     title: newTask.value.title,
     description: newTask.value.description,
-    subtasks: newTask.value.subtasks
+    isShared: newTask.value.isShared,
+    subTasks: newTask.value.subTasks
     .filter(item => item.title && item.title.trim() !== '')
     .map(item => ({ 
       "id": item.id,
@@ -125,16 +127,21 @@ const handleSaveNewTask = async () => {
       "taskId": item.taskId
     }))
   }
+  console.log("new Task",newTask)
   console.log("payload", payload)
-  console.log("percentage after new task", taskStore.CalculateCompletionPercentage())
   try {
     let response = null;
     if(!isEditing.value){
       response = await addTaskWithSubTasks(payload, token);
+      console.log('responseAdd',response)
+      taskStore.addTask(response.task, response.subTask)
+      loadTasks()
       console.log('SAVE ACTION');
     } else {
       console.log('UPDATE ACTION');
-      response = await updateSubTasks(payload, token);
+      response = await updateTaskWithSubTasks(payload, token);
+      taskStore.updateSubtaskList(response.task, response.todoList)
+      console.log('after update action', response)
     }
 
     if(response){
@@ -155,27 +162,29 @@ const handleSaveNewTask = async () => {
 };
 
 const loadEditTask = (id) => {
-  const launchTask =  Array.from(taskStore.taskList).find(t => t.id === id);
-  console.log('launchTask', launchTask.subtasks.length)
+  const launchTask =  {... Array.from(taskStore.taskList).find(t => t.id === id)};
+  const todoList = launchTask.subTasks.map(item => {
+    return {
+      "id": item.id,
+      "title": item.title,
+      "completed": item.completed,
+      "taskId": item.taskId
+    }
+  })
+  launchTask.subTasks = todoList;
+  console.log('launchTask', launchTask);
   if (launchTask) {
     newTask.value.title = launchTask.title;
     newTask.value.description = launchTask.description;
-    newTask.value.subtasks = launchTask.subtasks.length == 0 ? [{ title: '' }] : launchTask.subtasks;
+    newTask.value.subTasks = launchTask.subTasks.length == 0 ? [{ title: '' }] : launchTask.subTasks;
     newTask.value.taskId = launchTask.id;
     isEditing.value = true;
   }
-
-  console.log('newTask', newTask.value);
-  editingTask.value = {
-    id: launchTask.id, 
-    title: newTask.value.title,
-    description: newTask.value.description,
-    subtasks: newTask.value.subtasks
-  };
 };
 
 const handleSuspendEditTask = () => {
   isEditing.value = false;
+
   resetNewTask();
 };
 
@@ -186,6 +195,7 @@ const loadTasks = async () => {
        try {
           const result = await getUserTasks(token);
           taskStore.setTaskList(result);
+          console.log('result in front end', result)
           console.log('TASK STORE',  taskStore.taskList)
        } catch (error) {
            console.error('loadTasks.error >> ', error);
@@ -193,15 +203,10 @@ const loadTasks = async () => {
    }
 }
 
-
-const removeTaskFromList = (id) => {
-  taskStore.taskList = taskStore.taskList.filter(task => task.id !== id); 
-};
-
 const resetNewTask = () => {
   newTask.value.title = '';
   newTask.value.description = '';
-  newTask.value.subtasks = [{ title: '' }];
+  newTask.value.subTasks = [{ title: '' }];
 };
 
 onMounted(async () => {

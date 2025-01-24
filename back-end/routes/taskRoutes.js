@@ -7,11 +7,15 @@ const {
     getTaskDetails,
     updateUserTask,
     deleteUserTask,
-    toggleTask, 
+    toggleTask,
+    getSharedTasks,
+    toggleSharedTask, 
 
 } = require('../controllers/taskControllers');
 
 router.get('/getTasks', getUserTasks);
+router.get('/getSharedTasks', getSharedTasks);
+router.put('/:taskId/toggleSharedTask', toggleSharedTask);
 router.post('/addTask', addUserTask);
 router.put('/:taskId/toggle', toggleTask);
 router.get('/getTaskDetails/:taskId', getTaskDetails);

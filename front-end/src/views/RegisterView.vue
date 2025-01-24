@@ -55,6 +55,8 @@
   import { useRouter } from 'vue-router';
   import { addUser } from '@/services/userService'; 
   import { manageErrorCodeUser } from '@/Utils/manageUtils';
+  import { useAuthStore } from '@/stores/authStore';
+
   
   const router = useRouter();
   const username = ref('');
@@ -62,17 +64,20 @@
   const password = ref('');
   const errorCode = ref('');
   const errorMessage = ref('');
-  
+  const authStore = useAuthStore();
+
   
   const handleRegister = async () => {
   errorMessage.value = '';
 
   try {
     const _response = await addUser(username.value, email.value, password.value);
+
     console.log('handleRegister._response >> ', _response);
     
     if (_response.user) {
       router.push('/');
+      authStore.getUser(_response.user);
       username.value = '';
       email.value = '';
       password.value = '';
@@ -82,7 +87,6 @@
     const errorResponse = manageErrorCodeUser(error.code, error.message);
     errorCode.value = errorResponse.code;
     errorMessage.value = errorResponse.message;
-
     console.error('handleRegister.error >> ', error);
   }
 };

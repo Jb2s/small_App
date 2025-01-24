@@ -8,13 +8,13 @@
       </div>
       <div class="modal-body overflow-auto p-4">
         <p class="mb-2 "><i>{{ taskStore.selectedTask.description }}</i></p>
-
-        <div v-if="taskStore.selectedTask.subtasks && taskStore.selectedTask.subtasks.length > 0">
+        <div v-if="taskStore.selectedTask.subTasks && taskStore.selectedTask.subTasks.length > 0">
           <ul class="list-disc pl-5">
-            <li v-for="(subtask) in taskStore.selectedTask.subtasks" :key="subtask.id" class="flex justify-between mb-2">
+            <li v-for="(subtask) in taskStore.selectedTask.subTasks" :key="subtask.id" class="flex justify-between mb-2">
               <span :class="{ 'line-through': subtask.completed }"><i>{{ subtask.title }}</i></span>
               <div class="flex items-center space-x-2"> <!-- Conteneur pour les boutons -->
-                <button @click="handletoggleSubTask(subtask)" type="button" class="text-blue-700 border border-blue-700 hover:bg-blue-700 hover:text-white font-small rounded-full text-xs p-1 text-center inline-flex items-center">
+                <div v-if="iskTaskMine(taskStore.selectedTask) ">
+                  <button @click="handletoggleSubTask(subtask)" type="button" class="text-indigo-700 border border-indigo-700 hover:bg-indigo-700 hover:text-white font-small rounded-full text-xs p-1 text-center inline-flex items-center">
                   <svg v-if="subtask.completed" class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 18">
                     <path d="M3 7H1a1 1 0 0 0-1 1v8a2 2 0 0 0 4 0V8a1 1 0 0 0-1-1Zm12.954 0H12l1.558-4.5a1.778 1.778 0 0 0-3.331-1.06A24.859 24.859 0 0 1 6 6.8v9.586h.114C8.223 16.969 11.015 18 13.6 18c1.4 0 1.592-.526 1.88-1.317l2.354-7A2 2 0 0 0 15.954 7Z"/>
                   </svg>
@@ -22,9 +22,10 @@
                     <path stroke="currentColor" stroke-width="2" d="M2.5,9l5,5L15,4"/>
                   </svg>
                 </button>
-                <button @click.stop="handleRemovesubTask(subtask)" class="bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 transition">
+                  <button @click.stop="handleRemovesubTask(subtask)" class="bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 transition">
                   <i class="fas fa-times"></i>
                 </button>
+                </div>
               </div>
             </li>
           </ul>
@@ -64,22 +65,21 @@ watch(() => taskStore.selectedTask, (thisTask) => {
 
 const handletoggleSubTask = async (subtask) => {
   const token = authStore.getToken;
-  console.log('token >> ', token);
   console.log('subtask >> ', subtask);
   if (!token) return console.error('Token non trouvé');
   try {
     const responseSubTask = await toggleSubTask(selectedTask.value.id, subtask.id, token);
     if (responseSubTask) {
-      console.log('responseSubTask >> ', responseSubTask);
-      subtask.completed = responseSubTask.subTask.completed;
+      console.log('responseSubTask', responseSubTask)
       taskStore.updateTask(responseSubTask.task.id,responseSubTask.subTask)
+      console.log('taskStore.taskList >> ', taskStore.taskList);
       emit('toggle'); 
     }
     
   } catch (error) {
     const errorResponse = manageErrorCodeTaskAndSubtask(error.code, error.message);
-    console.error('handleAddNewTask.error >> ', error);
-    alert(errorResponse.message);
+    console.error('handleToggleTask.error >> ', error);
+    console.warn(errorResponse.message);
   }
 };
 
@@ -88,7 +88,7 @@ const handleRemovesubTask = async (subtask) => {
   console.log('token >> ', token);
   if (!token) return console.error('Token non trouvé');
   try {
-    removeSubTaskFromList(selectedTask.value.id, subtask.id)
+    taskStore.deleteSubTask(selectedTask.value.id, subtask.id)
     const responseSubTask = await removeSubTask(selectedTask.value.id, subtask.id, token);
     if (responseSubTask) {
       console.log('responseSubTask',responseSubTask)
@@ -96,18 +96,14 @@ const handleRemovesubTask = async (subtask) => {
     
   } catch (error) {
     const errorResponse = manageErrorCodeTaskAndSubtask(error.code, error.message);
-    console.error('handleAddNewTask.error >> ', error);
+    console.error('handleRemoveTask.error >> ', error);
     alert(errorResponse.message);
   }
 };
 
-const removeSubTaskFromList = (taskId, subtaskId) => {
-  const task = taskStore.taskList.find(t => t.id === taskId); 
-    if (task) {
-      task.subtasks = task.subtasks.filter(subtask => subtask.id !== subtaskId); 
-    }
+const iskTaskMine = (t) => {
+  return t.userId === authStore.UID;
 };
-
 </script>
 
 <style scoped>

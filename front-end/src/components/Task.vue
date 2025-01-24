@@ -1,25 +1,65 @@
 <template>
   <div class="task-card flex bg-white border border-gray-300 rounded-lg shadow-md p-5 transition-shadow duration-200 hover:shadow-lg">
     <div class="task-content flex flex-col flex-grow">
-      <span class="inline-block w-full px-2 py-1 text-md text-white mb-2" 
-            :class="{ 'bg-green-500 rounded-sm': task.completed, 'bg-yellow-400 rounded-sm': !task.completed }">
-        <i>{{ task.completed ? 'Complète' : 'Planifiée' }}</i>
+      <span class="inline-block w-full px-2 py-1 text-md text-gray mb-2" 
+            :class="{ 'bg-green-200 rounded-sm': props.item.completed, 'bg-yellow-200 rounded-sm': !props.item.completed }">
+        <i>{{ props.item.completed ? 'Complète' : 'Planifiée' }}</i>
       </span>
-      <h5  class="task-title text-lg text-gray-900 cursor-pointer" :class="{ 'line-through': task.completed }" @click="handleTaskClick"><i>{{ task.title }}</i></h5>
-      <h6 class="task-title text-md text-gray-700 cursor-pointer" @click="handleTaskClick"><i>{{ task.description }}</i></h6>
+      <h5  class="task-title text-lg text-gray-900 cursor-pointer" :class="{ 'line-through': props.item.completed }" @click="handleTaskClick"><i>{{ props.item.title }}</i></h5>
+      <h6 class="task-title text-md text-gray-700 cursor-pointer" @click="handleTaskClick"><i>{{ props.item.description }}</i></h6>
       <p class="task-subtasks-count text-sm text-gray-600">
-        <i>{{ task.subtasks && task.subtasks.length > 0 ? task.subtasks.length + ' sous tâche(s)' : 'Aucune tâche' }}</i>
+        <i>{{ props.item.subTasks && props.item.subTasks.length > 0 ? props.item.subTasks.length + ' sous tâche(s)' : 'Aucune tâche' }}</i>
       </p>
-      <div class="task-actions flex justify-end gap-2">
-        <button @click.stop="handleToggleTask" class="btn bg-blue-500 text-white rounded-full w-7 h-7 flex items-center justify-center px-2 py-1 hover:bg-blue-600">
-          <i class="fas fa-check"></i>
-        </button>
-        <button @click.stop="handleLaunchEditTask" class="red-button bg-yellow-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-yellow-600 transition">
-          <i class="fas fa-edit"></i> 
-        </button> 
-        <button @click.stop="handleRemoveTask" class="red-button bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 transition">
-          <i class="fas fa-times"></i> 
-        </button>          
+                <div class="flex justify-between items-center">
+        <div class="task-actions">
+          <p class="task-subtasks-count text-xs text-indigo-600"><i v-if="props.item.isShared">Partagée</i></p>
+        </div>  
+        <div v-if="iskTaskMine(props.item)" class="task-actions">
+          <div class="relative group">
+            <button id="dropdownDefaultButton" class="text-indigo-900 bg-indigo-300 hover:bg-indigo-400 font-medium rounded-sm text-sm px-5 py-2.5 text-center inline-flex items-center" type="button">
+              Actions
+              <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4"/>
+              </svg>
+            </button>
+
+            <div class="absolute z-10 bg-white divide-y divide-indigo-100 rounded-sm shadow w-40 hidden group-hover:block">
+              <ul class="py-2 text-sm text-gray-700">
+                <li>
+                  <button @click.stop="handleToggleTask" class=" w-full flex items-center px-4 py-2 hover:bg-indigo-100">
+                    <i class="fas fa-check-to-slot mr-2"></i>
+                    <span>Terminer</span>
+                  </button>
+                </li>
+                <li>
+                  <button @click.stop="handleLaunchEditTask" class="w-full flex items-center px-4 py-2 hover:bg-indigo-100">
+                    <i class="fas fa-edit mr-2"></i>
+                    <span>Modifier</span>
+                  </button>
+                </li>
+                <li>
+                  <button @click.stop="handleRemoveTask" class="w-full flex items-center px-4 py-2 hover:bg-indigo-100">
+                    <i class="fas fa-trash mr-2"></i>
+                    <span>Supprimer</span>
+                  </button>
+                </li>
+                <li>
+                  <div v-if = "!props.item.isShared">
+                    <button @click.stop="handleShareTask" class="w-full flex items-center px-4 py-2 hover:bg-indigo-100">
+                    <i class="fas fa-share-nodes mr-2"></i>
+                    <span>Partager</span>
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div v-if="!iskTaskMine(props.item)">
+          <div v-if="getSharedByUserName(props.item)">
+          <p class="text-xs text-indigo-500"> <i> Par : </i>{{props.item.user.username}}</p>
+        </div>
+        </div>
       </div>
     </div>
   </div>
@@ -28,7 +68,7 @@
 <script setup>
 import { defineProps, defineEmits, ref } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
-import { toggleTask, removeTask } from '@/services/taskServices';
+import { toggleTask, removeTask, toggleSharedTask } from '@/services/taskServices';
 import { manageErrorCodeTaskAndSubtask } from '@/utils/manageUtils';
 import { useTaskStore } from '@/stores/taskStore';
 
@@ -88,8 +128,8 @@ const handleRemoveTask = async () => {
   }
 
   try {
-    await removeTask(task.value.id, token); 
-    emit('remove', task.value.id); 
+    await removeTask(task.value.id, token);
+    taskStore.deleteTask(task.value.id);
   } catch (error) {
     const errorResponse = manageErrorCodeTaskAndSubtask(error.code, error.message);
     errorCode.value = errorResponse.code; 
@@ -101,6 +141,39 @@ const handleRemoveTask = async () => {
     }
   }
 };
+const handleShareTask = async () => {
+  const token = authStore.getToken; 
+
+  if (!token) {
+    console.error('Token non trouvé');
+    console.log('Veuillez vous connecter pour continuer.'); 
+    return; 
+  }
+
+  try {
+   const  response = await toggleSharedTask(task.value.id, token);
+   task.value.isShared = response.isShared 
+    taskStore.shareTask(task.value.id);
+  } catch (error) {
+    const errorResponse = manageErrorCodeTaskAndSubtask(error.code, error.message);
+    errorCode.value = errorResponse.code; 
+    errorMessage.value = errorResponse.message; 
+    console.error('handleShareTask.error >> ', error);
+    
+    if (errorCode.value) {
+      console.log(errorMessage.value); 
+    }
+  }
+};
+const iskTaskMine = (t) => {
+  return t.userId === authStore.UID;
+};
+
+const getSharedByUserName = (id) => {
+  const user = taskStore.sharedTaskList.find((u) => u.id === id);
+  return user ? user.name : 'Utilisateur inconnu';
+};
+
 
 </script>
 
@@ -111,6 +184,6 @@ const handleRemoveTask = async () => {
   border-radius: 0.5rem;
 }
 .line-through {
-    text-decoration: line-through; 
+  text-decoration: line-through; 
 }
 </style>

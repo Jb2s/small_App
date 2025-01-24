@@ -8,7 +8,8 @@ import axios from "axios";
             title: taskData.title,
             description: taskData.description,
             completed: taskData.completed,
-            subtasks: Array.isArray(taskData.subtasks) ? taskData.subtasks.map(subtask => ({
+            isShared: taskData.isShared,
+            subTasks: Array.isArray(taskData.subTasks) ? taskData.subTasks.map(subtask => ({
                 title: subtask.title
             })) : []
         };
@@ -29,7 +30,7 @@ import axios from "axios";
     }
   };
 
-  export const updateSubTasks = async (taskData, token) => {
+  export const updateTaskWithSubTasks = async (taskData, token) => {
     const url = `${import.meta.env.VITE_URL_API}/tasks/updateTask/${taskData.taskId}`; 
 
     try {
@@ -37,7 +38,7 @@ import axios from "axios";
             title: taskData.title,
             description: taskData.description,
             completed: taskData.completed,
-            subtasks: Array.isArray(taskData.subtasks) ? taskData.subtasks.map(subtask => ({
+            subTasks: Array.isArray(taskData.subTasks) ? taskData.subTasks.map(subtask => ({
                 id: subtask.id, 
                 title: subtask.title
             })) : []
@@ -78,6 +79,23 @@ export const getUserTasks = async (token) => {
     }
 };
 
+export const getSharedTasks = async (token) => {
+    const url = `${import.meta.env.VITE_URL_API}/tasks/getSharedTasks`; 
+
+    try {
+        const response = await axios.get(url, {
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}` 
+            }
+        });
+        return response.data; 
+    } catch (error) {
+        console.error('taskService.getUserTasks.error >> ', error);
+        throw error.response.data; 
+    }
+};
 
 export const toggleTask = async (taskId, token) => {
     const url = `${import.meta.env.VITE_URL_API}/tasks/${taskId}/toggle`; 
@@ -92,6 +110,24 @@ export const toggleTask = async (taskId, token) => {
         return response.data; 
     } catch (error) {
         console.error('Erreur lors du basculement de la tâche:', error); 
+        throw error.response.data;
+    }
+    
+};
+
+export const toggleSharedTask = async (taskId, token) => {
+    const url = `${import.meta.env.VITE_URL_API}/tasks/${taskId}/toggleSharedTask`; 
+    try {
+        const response = await axios.put(url, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+            },
+        });
+        return response.data; 
+    } catch (error) {
+        console.error('Erreur lors du partage de la tâche:', error); 
         throw error.response.data;
     }
     

@@ -18,7 +18,7 @@ export const toggleSubTask = async (taskId,subtaskId, token) => {
     
 };
 
-export const removeSubTask = async (taskId,subtaskId, token) => {
+export const removeSubTask = async (taskId, subtaskId, token) => {
     
     const url = `${import.meta.env.VITE_URL_API}/subtasks/${taskId}/deleteSubtasks/${subtaskId}`; 
 

@@ -70,11 +70,13 @@ const handleLogin = async () => {
   try {
     const _response = await authenticateUser(email.value, password.value);
     console.log('handleLogin._response >> ', _response);
+    console.log('authStore.createdUser', authStore.createdUser);
     _token.value = _response.token;
 
     if (_token.value) {
       authStore.confirmRecieveToken(_token.value);
       router.push('/home');
+      authStore.getUID(_response.uid);
       email.value = '';
       password.value = '';
     }

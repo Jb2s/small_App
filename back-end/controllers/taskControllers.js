@@ -1,14 +1,13 @@
+const User = require('../models/User');
 const Task = require('../models/Task'); 
 const Subtask = require('../models/Subtask'); 
 const sequelize = require('../config/database');
 
-
 const addUserTask = async (req, res) => {
-  const { title, description, completed, subtasks } = req.body; 
-  const userId = req.user.id; 
-
+  const { title, description, completed, subTasks } = req.body;
+  const userId = req.user.id;
   const transaction = await sequelize.transaction();
-
+  console.log(' recevie from front end', subTasks)
   try {
     const newTask = await Task.create(
       {
@@ -19,30 +18,65 @@ const addUserTask = async (req, res) => {
       },
       { transaction }
     );
-
-    if (subtasks && Array.isArray(subtasks) && subtasks.length) {
-      const subTasks = subtasks
-        .filter(subtask => subtask.title) 
-        .map(subtask => ({
-          title: subtask.title,
+    let createdSubtask = []; 
+    
+    if (subTasks && Array.isArray(subTasks) && subTasks.length) {
+      const _subTasks = subTasks
+        .filter((sb) => sb.title) 
+        .map((sb2) => ({
+          title: sb2.title,
           taskId: newTask.id, 
         }));
-    
-      if (subTasks.length) {
-        await Subtask.bulkCreate(subTasks, { transaction });
+        console.log('subTasks in progress', _subTasks)
+      if (_subTasks) {
+        createdSubtask = await Subtask.bulkCreate(_subTasks, { transaction });
       }
+      console.log('createdSubtask success', createdSubtask)
     }
-
     await transaction.commit();
-
-    res.status(201).json(newTask); 
+    res.status(201).json({
+      task: newTask,
+      subTasks: createdSubtask.length ? createdSubtask : undefined, 
+    });
   } catch (error) {
     await transaction.rollback();
-    console.error('Erreur lors de l\'ajout de la tâche:', error);
-    res.status(500).json({ 
-      message: 'Erreur interne du serveur.',
-    isError: true,
-    code: 'S000' });
+    console.error("Erreur lors de l'ajout de la tâche:", error);
+    res.status(500).json({
+      message: "Erreur interne du serveur.",
+      isError: true,
+      code: "S000"
+    });
+  }
+};
+
+const getSharedTasks = async (req, res) => {
+  try {
+    const sharedTasks = await Task.findAll({
+      where: { isShared: true }, 
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['username'], 
+        },
+        {
+          model: Subtask,
+          as: 'subTasks', 
+          attributes: ['id', 'title','completed'], 
+        },
+      ],
+    });
+    if (sharedTasks.length === 0) {
+      return res.status(404).json({
+        message: 'Aucune tache trouvée.',
+        isError: true,
+        code: 'UT000'
+      });
+    }
+    res.status(200).json( sharedTasks );
+  } catch (error) {
+    console.error('Erreur lors de la récupération des tâches partagées :', error);
+    res.status(500).json({ message: 'Erreur serveur lors de la récupération des tâches partagées.' });
   }
 };
 
@@ -62,8 +96,8 @@ const getUserTasks = async (req, res) => {
 
     const tasksWithSubtasks = await Promise.all(
       tasks.map(async (task) => {
-        const subtasks = await Subtask.findAll({ where: { taskId: task.id } });
-        return { ...task.toJSON(), subtasks }; 
+        const subTasks = await Subtask.findAll({ where: { taskId: task.id } });
+        return { ...task.toJSON(), subTasks }; 
       })
     );
 
@@ -134,9 +168,6 @@ const toggleTask = async (req, res) => {
   }
 };
 
-
-
-
 const getTaskDetails = async (req, res) => {
   const taskId = req.params.taskId; 
   const userId = req.user.id; 
@@ -169,8 +200,44 @@ const getTaskDetails = async (req, res) => {
   }
 };
 
-const updateUserTask = async (req, res) => {
+const toggleSharedTask = async(req, res) => {
   const taskId = req.params.taskId; 
+  const userId = req.user.id;
+
+  try {
+    const task = await Task.findOne({
+      where: {
+        id: taskId,
+        userId: userId,
+      },
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        message: 'Tâche non trouvée.',
+        isError: true,
+        code: 'UT000'
+      });
+    }
+
+    task.isShared = true;
+    await task.save();
+
+    res.status(200).json( task );
+    
+  } catch (error) {
+    console.error('Erreur lors du partage de la tâche:', error);
+    res.status(500).json({ 
+      message: 'Erreur interne du serveur.',
+      isError: true,
+      code: 'S000' 
+    });
+  }
+
+}
+
+const updateUserTask = async (req, res) => {
+  const taskId = req.params.taskId;
   const userId = req.user.id;
   const { title, description, completed, subtasks } = req.body;
   console.log('req.body', req.body);
@@ -178,65 +245,64 @@ const updateUserTask = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    const task = await Task.findOne({ 
+    const task = await Task.findOne({
       where: {
         id: taskId,
-        userId: userId 
-        } 
+        userId: userId,
+      },
+      transaction, 
     });
 
     if (!task) {
-      console.log('task not found');
-      return res.status(404).json({ 
-        message: 'Tâche non trouvée.', 
+      console.log('Tâche non trouvée');
+      await transaction.rollback();
+      return res.status(404).json({
+        message: 'Tâche non trouvée.',
         isError: true,
-        code: 'UT000' });
+        code: 'UT000',
+      });
     }
 
-    task.title = title ? title : task.title;
-    task.description = description ? description : task.description;
-    task.completed = completed ? completed : task.completed;
+    if (title !== undefined) task.title = title;
+    if (description !== undefined) task.description = description;
+    if (completed !== undefined) task.completed = completed;
+    if (completed !== undefined) task.completed = completed;
 
     await task.save({ transaction });
-    
-    
-    let todoList = []
+
+    const todoList = [];
     if (subtasks && Array.isArray(subtasks)) {
       for (const subtask of subtasks) {
-        let _todo = await Subtask.findByPk(subtask.id);
         if (subtask.id) {
-          if (_todo) {
-            _todo.title = subtask.title !== undefined ? subtask.title : _todo.title;
-            await _todo.save({ transaction });
+          const existingSubtask = await Subtask.findByPk(subtask.id, { transaction });
+          if (existingSubtask) {
+            if (subtask.title !== undefined) existingSubtask.title = subtask.title;
+            await existingSubtask.save({ transaction });
+            todoList.push(existingSubtask);
           }
         } else {
-          await Subtask.create({
-            title: subtask.title,
-            taskId: task.id,
-          }, { transaction });
+          const newSubtask = await Subtask.create(
+            {
+              title: subtask.title,
+              taskId: task.id,
+            },
+            { transaction }
+          );
+          todoList.push(newSubtask);
         }
-        todoList.push(_todo); 
-      } 
-      
-      // const existingSubtaskIds = task.subtasks.map(subtask => subtask.id);
-
-      
-
-      // const subtaskIdsToDelete = existingSubtaskIds.filter(id => !subtasks.some(subtask => subtask.id === id));
-      // if (subtaskIdsToDelete.length) {
-      //   await Subtask.destroy({ where: { id: subtaskIdsToDelete }, transaction });
-      // }
+      }
     }
 
     await transaction.commit();
-    res.status(200).json(task); 
+
+    res.status(200).json({ task, todoList });
   } catch (error) {
     await transaction.rollback();
     console.error('Erreur lors de la mise à jour de la tâche:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: 'Erreur interne du serveur.',
       isError: true,
-      code: 'S001' 
+      code: 'S001',
     });
   }
 };
@@ -282,4 +348,6 @@ module.exports = {
   updateUserTask,
   deleteUserTask,
   toggleTask,
+  getSharedTasks ,
+  toggleSharedTask,
 };

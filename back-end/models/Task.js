@@ -15,6 +15,10 @@ Task.init({
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
+  isShared: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,

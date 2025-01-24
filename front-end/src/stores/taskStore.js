@@ -1,41 +1,65 @@
 import { defineStore } from 'pinia';
 
-export const useTaskStore = defineStore('todoList', {
+export const useTaskStore = defineStore('taskList', {
   state: () => ({
     taskList: [],
+    sharedTaskList: [],
     selectedTask: null,
-    percentage: null, 
+    isMine: true,
+    percentage: 0, 
   }),
   actions: {
-    
+
+    addTask(task, todoList){
+      console.log('addTask')
+      this.taskList.push({
+        id: task.id, 
+        title: task.title,
+        description: task.description, 
+        completed: task.completed, 
+        subTasks: todoList,
+        userId: task.userId
+      });
+      console.log('new task list after add task' , this.taskList )
+    },
     setTaskList(taskList) {
-      this.taskList = taskList;
+      console.log('setTaskList')
+      this.taskList = taskList
       console.log('taskList after set task list', taskList)
       this.CalculateCompletionPercentage();
 
     },
     updateTask(taskId, todoList) {
+      console.log('updateTask')
       this.taskList.forEach(task => {
         if (task.id == taskId) {
           task.completed = true; 
-          task.subtasks.forEach((item, index) => {
+          task.subTasks.forEach((item, index) => {
             if (item.id == todoList.id) {
-              task.subtasks[index] = todoList; 
+              task.subTasks[index] = todoList; 
             }
           });
-          const allSubtasksCompleted = task.subtasks.every(subtask => subtask.completed);
-          task.completed = allSubtasksCompleted; 
-          console.log('Tâche mise à jour:', task);
+          const allSubtasksCompleted = task.subTasks.every(s => s.completed);
+          task.completed = allSubtasksCompleted;
+          this.selectedTask = task; 
+          console.log('Tâche mise à jour:', this.selectedTask);
           this.CalculateCompletionPercentage();
 
         }
       });
     },
     updateSubtaskList(taskData, todoList) {
+      console.log('updateSubtaskList')
       this.taskList.forEach(task => {
         if(task.id == taskData.id){
           task.completed = taskData.completed;
-          task.subtasks = todoList;
+          task.subTasks.forEach((item, index) => {
+            if (item.id == todoList.id) {
+              task.subTasks[index] = todoList; 
+            }
+          });          
+          this.selectedTask = task;
+          console.log('updateSubtaskList', this.selectedTask)
         }
       });
       console.log('TaskStore.OUT', this.taskList)
@@ -43,26 +67,45 @@ export const useTaskStore = defineStore('todoList', {
 
     },
     setSelectedTask(task) {
+      console.log('setSelectedTask')
       this.selectedTask = task;
     },
     CalculateCompletionPercentage() {
+      console.log('CalculateCompletionPercentage')
       const totalTasks = this.taskList.length; 
-      const completedTasks = this.taskList.filter(task => task.completed == true).length;
-      console.log('UPDATE DATA', this.taskList) 
-      console.log('UPDATE LENGTH', this.taskList.length)
-      console.log('completedTasks', this.taskList.filter(task => task.completed == true).length)
-      console.log('NONE completedTasks', this.taskList.filter(task => task.completed == false).length)
-
+      const completedTasks = this.taskList.filter(t => t.completed == true).length;
       this.percentage = totalTasks === 0 ? 0 : (completedTasks / totalTasks) * 100;
-      console.log('percentage',this.percentage);
       this.percentage = Math.round(this.percentage * 100) / 100;
-  },
-  deleteTask(taskId) {
-    this.taskList = this.taskList.filter(task => task.id !== taskId);
-    console.log(`Tâche avec l'ID ${taskId} supprimée.`);
-    this.CalculateCompletionPercentage();
+    },
 
-  },
+    deleteTask(taskId) {
+      console.log('deleteTask')
+      this.taskList = this.taskList.filter(t => t.id !== taskId);
+      this.CalculateCompletionPercentage();
+    },
+
+    deleteSubTask(taskId,subtaskId){
+      console.log('deleteSubTask')
+      const task = this.taskList.find(t => t.id === taskId);
+      if (task) {
+        task.subTasks = task.subTasks.filter(s => s.id !== subtaskId);
+        this.selectedTask = { ...task };
+        this.CalculateCompletionPercentage();
+    
+      }
+
+    },
+    shareTask(taskId){
+      this.taskList.forEach(task => {
+        if (task.id == taskId) {
+          task.isShared = true; 
+        }
+      });
+    },
+    setSharedTaskList(s_taskList) {
+      this.sharedTaskList = JSON.parse(JSON.stringify(s_taskList));
+      console.log('setSharedTaskList', this.sharedTaskList);
+    },
   },
   getters: {
     getPercentage: (state) => state.percentage,

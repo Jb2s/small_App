@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '../views/LoginView.vue';
 import HomeView from '../views/HomeView.vue';
 import RegisterView from '../views/RegisterView.vue';
+import ComunityView from '../views/ComunityView.vue';
 import { useAuthStore } from '@/stores/authStore';
 
 
@@ -26,13 +27,18 @@ const router = createRouter({
       component: HomeView,
       meta: { showNavbar: true, requiresAuth: true }, 
     },
+    {
+      path: '/comunity',
+      name: 'comunity',
+      component: ComunityView,
+      meta: { showNavbar: true, requiresAuth: true }, 
+    },
   ],
 });
 
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
-  authStore.loadUsers(); 
 
   const _isUserAuthenticated = authStore.isUserAuthenticated;
   console.log('_isUserAuthenticated',_isUserAuthenticated)
