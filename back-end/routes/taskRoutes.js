@@ -9,14 +9,18 @@ const {
     deleteUserTask,
     toggleTask,
     getSharedTasks,
-    toggleSharedTask, 
+    toggleSharedTask,
+    addCommentToTask,
+    getCommentsToTask, 
 
 } = require('../controllers/taskControllers');
 
 router.get('/getTasks', getUserTasks);
+router.get('/:taskId/getCommentsToTask/', getCommentsToTask);
 router.get('/getSharedTasks', getSharedTasks);
 router.put('/:taskId/toggleSharedTask', toggleSharedTask);
 router.post('/addTask', addUserTask);
+router.post('/:taskId/addComment/', addCommentToTask);
 router.put('/:taskId/toggle', toggleTask);
 router.get('/getTaskDetails/:taskId', getTaskDetails);
 router.put('/updateTask/:taskId', updateUserTask);

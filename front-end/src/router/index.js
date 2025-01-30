@@ -33,6 +33,12 @@ const router = createRouter({
       component: ComunityView,
       meta: { showNavbar: true, requiresAuth: true }, 
     },
+    {
+      path: '/comunity/:id',
+      name: 'comunity_id',
+      component: () => import('@/views/ComunityDetailView.vue'),
+      meta: { showNavbar: true, requiresAuth: true }, 
+    },
   ],
 });
 

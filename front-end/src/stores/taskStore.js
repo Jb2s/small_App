@@ -4,6 +4,7 @@ export const useTaskStore = defineStore('taskList', {
   state: () => ({
     taskList: [],
     sharedTaskList: [],
+    allCommentsToTask: [],
     selectedTask: null,
     isMine: true,
     percentage: 0, 
@@ -28,6 +29,12 @@ export const useTaskStore = defineStore('taskList', {
       console.log('taskList after set task list', taskList)
       this.CalculateCompletionPercentage();
 
+    },
+    setCommentsToTask(comments) {
+      this.allCommentsToTask = Array.isArray(comments) ? [...comments] : [];
+      console.log('this.allCommentsToTask in store', this.allCommentsToTask)
+      // console.log('taskList after set task list', comments)
+      // this.CalculateCompletionPercentage();
     },
     updateTask(taskId, todoList) {
       console.log('updateTask')
@@ -93,7 +100,6 @@ export const useTaskStore = defineStore('taskList', {
         this.CalculateCompletionPercentage();
     
       }
-
     },
     shareTask(taskId){
       this.taskList.forEach(task => {
@@ -105,6 +111,18 @@ export const useTaskStore = defineStore('taskList', {
     setSharedTaskList(s_taskList) {
       this.sharedTaskList = JSON.parse(JSON.stringify(s_taskList));
       console.log('setSharedTaskList', this.sharedTaskList);
+    },
+    addSharedTask(task, todoList){
+      console.log('addSharedTask');
+      this.sharedTaskList.push({
+        id: task.id, 
+        title: task.title,
+        description: task.description, 
+        completed: task.completed, 
+        subTasks: todoList,
+        userId: task.userId
+      });
+      console.log('new task list after add task' , this.taskList )
     },
   },
   getters: {

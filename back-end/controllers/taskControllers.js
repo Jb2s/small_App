@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Task = require('../models/Task'); 
-const Subtask = require('../models/Subtask'); 
+const Subtask = require('../models/Subtask');
+const Comment = require('../models/Comment');
 const sequelize = require('../config/database');
 
 const addUserTask = async (req, res) => {
@@ -33,6 +34,8 @@ const addUserTask = async (req, res) => {
       }
       console.log('createdSubtask success', createdSubtask)
     }
+    
+
     await transaction.commit();
     res.status(201).json({
       task: newTask,
@@ -48,6 +51,86 @@ const addUserTask = async (req, res) => {
     });
   }
 };
+
+
+const addCommentToTask = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const { userId, content } = req.body;
+
+    const task = await Task.findByPk(taskId);
+    if (!task) {
+      return res.status(404).json({ 
+        message: 'Tâche non trouvée',
+        isError: true,
+        code: 'UT000' 
+      });
+    }
+
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ 
+        message: "Utilisateur non trouvé",
+        isError: true,
+        code: 'U010' 
+      });
+    }
+
+    const comment = await Comment.create({
+      taskId,
+      userId,
+      content,
+    });
+
+    res.status(201).json({ message: 'Commentaire ajouté avec succès', comment });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur interne du serveur' });
+  }
+};
+
+module.exports = {
+  addCommentToTask,
+};
+
+
+const  getCommentsToTask = async (req, res) =>{
+  const { taskId } = req.params; 
+  const tId = parseInt(taskId, 10);
+  try {
+    const task = await Task.findByPk(tId, {
+      include: [
+        {
+          model: Comment,
+          as: 'comments', 
+          include: [
+            {
+              model: User,
+              as: 'user', 
+              attributes: ['id', 'username'], 
+            },
+          ],
+        },
+      ],
+    });
+    if (!task) {
+      return res.status(404).json({ 
+        message: 'Aucune tâche trouvée.',
+        isError: true,
+        code: 'UT000'
+       });
+    }
+    res.json({ task });
+  } catch (error) {
+    console.error('Erreur lors de la récupération des commentaires:', error);
+    res.status(500).json({ 
+      message: "Erreur interne du serveur.",
+      isError: true,
+      code: "S000"
+    });
+  }
+};
+
 
 const getSharedTasks = async (req, res) => {
   try {
@@ -76,7 +159,11 @@ const getSharedTasks = async (req, res) => {
     res.status(200).json( sharedTasks );
   } catch (error) {
     console.error('Erreur lors de la récupération des tâches partagées :', error);
-    res.status(500).json({ message: 'Erreur serveur lors de la récupération des tâches partagées.' });
+    res.status(500).json({ 
+      message: "Erreur interne du serveur.",
+      isError: true,
+      code: "S000"
+     });
   }
 };
 
@@ -111,7 +198,6 @@ const getUserTasks = async (req, res) => {
     });
   }
 };
-
 
 const toggleTask = async (req, res) => {
   const taskId = req.params.taskId; 
@@ -350,4 +436,6 @@ module.exports = {
   toggleTask,
   getSharedTasks ,
   toggleSharedTask,
+  addCommentToTask,
+  getCommentsToTask,
 };

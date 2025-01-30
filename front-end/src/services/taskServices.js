@@ -30,6 +30,32 @@ import axios from "axios";
     }
   };
 
+
+  export const addCommentToTask = async (data, taskId, token) => {
+    const url = `${import.meta.env.VITE_URL_API}/tasks/${taskId}/addComment/`;
+  
+    try {
+        const payload = {
+            userId: data.user.uid,
+            content: data.content,
+        };
+        console.log(payload);
+
+        const response = await axios.post(url, payload, {
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`
+            }
+            
+        });
+        return response.data;
+    } catch (error) {
+        console.error('taskService.addCommentToTask.error >> ', error);
+        throw error.response ? error.response.data : error;
+    }
+  };
+
   export const updateTaskWithSubTasks = async (taskData, token) => {
     const url = `${import.meta.env.VITE_URL_API}/tasks/updateTask/${taskData.taskId}`; 
 
@@ -92,7 +118,26 @@ export const getSharedTasks = async (token) => {
         });
         return response.data; 
     } catch (error) {
-        console.error('taskService.getUserTasks.error >> ', error);
+        console.error('taskService.getSharedTasks.error >> ', error);
+        throw error.response.data; 
+    }
+};
+
+
+export const getCommentsToTask = async (tId ,token) => {
+    const url = `${import.meta.env.VITE_URL_API}/tasks/${tId}/getCommentsToTask/`; 
+
+    try {
+        const response = await axios.get(url, {
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}` 
+            }
+        });
+        return response.data; 
+    } catch (error) {
+        console.error('taskService.getCommentsToTask.error >> ', error);
         throw error.response.data; 
     }
 };

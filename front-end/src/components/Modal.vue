@@ -12,8 +12,7 @@
           <ul class="list-disc pl-5">
             <li v-for="(subtask) in taskStore.selectedTask.subTasks" :key="subtask.id" class="flex justify-between mb-2">
               <span :class="{ 'line-through': subtask.completed }"><i>{{ subtask.title }}</i></span>
-              <div class="flex items-center space-x-2"> <!-- Conteneur pour les boutons -->
-                <div v-if="iskTaskMine(taskStore.selectedTask) ">
+                <div v-if="iskTaskMine(taskStore.selectedTask)" class="flex items-center gap-2">
                   <button @click="handletoggleSubTask(subtask)" type="button" class="text-indigo-700 border border-indigo-700 hover:bg-indigo-700 hover:text-white font-small rounded-full text-xs p-1 text-center inline-flex items-center">
                   <svg v-if="subtask.completed" class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 18">
                     <path d="M3 7H1a1 1 0 0 0-1 1v8a2 2 0 0 0 4 0V8a1 1 0 0 0-1-1Zm12.954 0H12l1.558-4.5a1.778 1.778 0 0 0-3.331-1.06A24.859 24.859 0 0 1 6 6.8v9.586h.114C8.223 16.969 11.015 18 13.6 18c1.4 0 1.592-.526 1.88-1.317l2.354-7A2 2 0 0 0 15.954 7Z"/>
@@ -21,12 +20,11 @@
                   <svg v-else class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
                     <path stroke="currentColor" stroke-width="2" d="M2.5,9l5,5L15,4"/>
                   </svg>
-                </button>
+                  </button>
                   <button @click.stop="handleRemovesubTask(subtask)" class="bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center hover:bg-red-600 transition">
                   <i class="fas fa-times"></i>
-                </button>
+                  </button>
                 </div>
-              </div>
             </li>
           </ul>
         </div>

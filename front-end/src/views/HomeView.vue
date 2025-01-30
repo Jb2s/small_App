@@ -14,23 +14,21 @@
       <textarea 
         v-model="newTask.description" 
         class="border border-indigo-100 p-2 rounded w-full mt-3 focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none'," 
-      ></textarea>
+      />
       <div class="mt-2">
         <div v-for="(subTask, index) in newTask.subTasks" :key="index" class="mb-3">
           <label for="Sous tâche" class="block text-sm font-medium text-gray-700">Sous tâche</label>
           <input 
             v-model="subTask.title" 
-            class="border border-indigo-100 p-2 rounded w-full focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none'," 
-          />
+            class="border border-indigo-100 p-2 rounded w-full focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none'," />
         </div>
         
         <div class="flex space-x-3 w-full"> 
-          <button @click="handleAddDetailTask" class="bg-indigo-200 text-indigo-900 text-sm px-4 py-2 rounded-sm hover:bg-indigo-300 transition flex-[0.4]" >
+          <button @click="handleAddDetailTask" class="bg-indigo-200 text-indigo-900 text-sm font-medium px-4 py-2 rounded-sm hover:bg-indigo-300 transition flex-[0.4]" >
             Ajouter une todo
           </button>
           <button @click="handleSaveNewTask" 
-            class="bg-indigo-200 text-indigo-900 text-sm px-4 py-2 rounded-sm hover:bg-indigo-300 transition flex-[0.6]" 
-          >
+            class="bg-indigo-200 text-indigo-900 font-medium text-sm px-4 py-2 rounded-sm hover:bg-indigo-300 transition flex-[0.6]" >
             Sauvegarder
           </button>
         </div>
@@ -43,7 +41,8 @@
         <div class="w-40 bg-yellow-200 rounded-full h-1.5 mt-2">
           <div class="bg-green-300 h-1.5 rounded-full" :style="{ width: per + '%', transition: 'all 0.3s ease' }"></div>
         </div>
-    </div>      
+    </div>
+
       <div v-if="taskStore.taskList.length">
         <div class=" justify-center">
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -71,7 +70,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted,computed  } from 'vue';
+import { ref, onMounted, computed  } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { addTaskWithSubTasks, getUserTasks, updateTaskWithSubTasks } from '@/services/taskServices';
 import { manageErrorCodeTaskAndSubtask } from '@/Utils/manageUtils';
@@ -208,10 +207,18 @@ const resetNewTask = () => {
   newTask.value.description = '';
   newTask.value.subTasks = [{ title: '' }];
 };
-
 onMounted(async () => {
   await loadTasks();
+  // socket.on('task_updated', loadTasks);
+  // console.log('socket',socket);
 });
+
+// onBeforeUnmount(() => {
+//   socket.off('task_updated', loadTasks);
+// });
+// onMounted(async () => {
+//   await loadTasks();
+// });
 </script>
 
 <style scoped>

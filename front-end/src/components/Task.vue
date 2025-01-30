@@ -15,6 +15,7 @@
           <p class="task-subtasks-count text-xs text-indigo-600"><i v-if="props.item.isShared">Partagée</i></p>
         </div>  
         <div v-if="iskTaskMine(props.item)" class="task-actions">
+          
           <div class="relative group">
             <button id="dropdownDefaultButton" class="text-indigo-900 bg-indigo-300 hover:bg-indigo-400 font-medium rounded-sm text-sm px-5 py-2.5 text-center inline-flex items-center" type="button">
               Actions
@@ -57,7 +58,7 @@
         </div>
         <div v-if="!iskTaskMine(props.item)">
           <div v-if="getSharedByUserName(props.item)">
-          <p class="text-xs text-indigo-500"> <i> Par : </i>{{props.item.user.username}}</p>
+          <p class="text-xs font-medium text-indigo-500"> <i> Par : {{props.item.user.username}}</i></p>
         </div>
         </div>
       </div>

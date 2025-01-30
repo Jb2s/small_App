@@ -4,6 +4,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: null,
     createdUser: null,
+    username: null,
     UID: null,
     isUserAuthenticated: false,
   }),
@@ -19,6 +20,9 @@ export const useAuthStore = defineStore('auth', {
     getUID(_uid){
       this.UID = _uid;
       console.log('this.createdUser', this.createdUser)
+    },
+    getUsername(usrn){
+      this.username = usrn;
     },
     logout(){
       this.token = null;

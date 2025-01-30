@@ -79,9 +79,10 @@ const authenticateUser = async (req, res) => {
           code: 'U010' });
       }
       const uid = user.id;
+      const username = user.username;
       const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, { expiresIn: '1h' });
   
-      return res.status(200).json({ token, uid });
+      return res.status(200).json({ token, uid, username });
       
     } 
     catch (error) 

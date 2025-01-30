@@ -28,7 +28,7 @@
           </div>
           <button
             type="submit"
-            class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
+            class="w-full bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600"
           >
             Se connecter
           </button>
@@ -37,9 +37,8 @@
           </div>
         </form>
         <div class="mt-4 text-center">
-          <p class="text-blue-500 text-sm">
-            Pas encore de compte ?
-            <router-link to="/register">Inscrivez-vous ici</router-link>
+          <p class="text-indigo-500 text-sm">
+            <router-link to="/register"> Pas encore de compte ? Inscrivez-vous ici</router-link>
           </p>
         </div>
       </div>
@@ -77,6 +76,7 @@ const handleLogin = async () => {
       authStore.confirmRecieveToken(_token.value);
       router.push('/home');
       authStore.getUID(_response.uid);
+      authStore.getUsername(_response.username);
       email.value = '';
       password.value = '';
     }
