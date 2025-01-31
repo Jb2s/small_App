@@ -1,26 +1,31 @@
 <template>
   <div class="p-5">
+
     <button class="mb-3 rounded-lg px-3 py-1 bg-red-500 text-white font-bold" v-if="isEditing" @click="handleSuspendEditTask">
       <i class="fas fa-times"></i> 
     </button>
+
     <div :class="['add-task-form', 'bg-gray-100', 'border', 'border-gray-300', 'rounded-lg', 'p-5', 'mb-4', 'shadow-sm', 'w-full', 'mx-auto',
            { 'editing': isEditing }]" class="max-w-4xl mb-2">
       <label for="tâche" class="block text-sm font-medium text-gray-700">Tâche</label>
+
       <input 
         v-model="newTask.title" 
         class="border border-indigo-100 p-2 rounded w-full focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none'," 
       />
+
       <label for="Description" class="block text-sm font-medium text-gray-700">Description</label>
       <textarea 
         v-model="newTask.description" 
         class="border border-indigo-100 p-2 rounded w-full mt-3 focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none'," 
       />
+
       <div class="mt-2">
         <div v-for="(subTask, index) in newTask.subTasks" :key="index" class="mb-3">
           <label for="Sous tâche" class="block text-sm font-medium text-gray-700">Sous tâche</label>
           <input 
             v-model="subTask.title" 
-            class="border border-indigo-100 p-2 rounded w-full focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none'," />
+            class="border border-indigo-100 p-2 rounded w-full focus:z-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
         </div>
         
         <div class="flex space-x-3 w-full"> 
@@ -32,6 +37,7 @@
             Sauvegarder
           </button>
         </div>
+
       </div>
     </div>
 
@@ -66,6 +72,7 @@
       :task="taskStore.selectedTask" 
       @close="closeModal" 
     />
+
   </div>
 </template>
 

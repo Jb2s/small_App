@@ -156,7 +156,7 @@ const getSharedTasks = async (req, res) => {
         code: 'UT000'
       });
     }
-    res.status(200).json( sharedTasks );
+    res.status(200).json( { sharedTasks} );
   } catch (error) {
     console.error('Erreur lors de la récupération des tâches partagées :', error);
     res.status(500).json({ 

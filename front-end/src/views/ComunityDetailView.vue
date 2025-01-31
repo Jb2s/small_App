@@ -1,70 +1,39 @@
 <template>
-    <div class="flex w-full h-screen bg-white">
-      <!-- Chat Panel -->
-      <div class="flex-1 flex flex-col">
-        <!-- Header -->
-        <div class="p-4 border-b flex items-center gap-3">
-            <div>
-              <h2 class="font-semibold">Tâche ID: {{ taskId }}</h2>
-              <!-- <p
-                class="text-sm"
-                :class="{
-                  'text-green-500': activeContactInfo.isOnline,
-                  'text-gray-500': !activeContactInfo.isOnline,
-                }"
-              >
-                {{ activeContactInfo.isOnline ? 'En ligne' : 'Hors ligne' }}
-              </p> -->
-            </div>
-        </div>
-  
-        <!-- Messages -->
-        <div class="flex-1 overflow-y-auto p-4">
-          <div
-            v-for="comment in taskStore.allCommentsToTask"
-            :key="comment.id"
-            :class="['mb-2', isMineComment ? 'text-right' : 'text-left']"
-          >
-            <div
-              :class="[
-                'inline-block px-4 py-2 rounded-lg',
-                isMineComment ? 'bg-indigo-100 text-indigo-600' : 'bg-gray-100 text-gray-800'
+  <div class="flex flex-col h-screen bg-gray-100">
+    <div class="flex-1 flex flex-col">
+      <div class="p-4 border-b flex items-center gap-3 bg-white sticky top-0 z-10">
+        <h2 class="font-semibold text-base sm:text-lg md:text-xl">Tâche ID: {{ taskId }}</h2>
+      </div>
 
-              ]"
-            >
-              <div v-if="isMineComment"> 
-                <span> Moi</span>
-              </div>
-              <div v-if="!isMineComment">
-                <span> {{ comment.user.username }}</span>
-              </div>
-              <p>{{ comment.content }}</p>
-              <span class="text-xs text-gray-500"><small>{{ formatTimeStamp(comment.createdAt) }} </small></span>
-            </div>
-          </div>
-        </div>
-  
-        <!-- Message Input -->
-        <div class="p-4 border-t">
-          <input
-            v-model="newComment.content"
-            @keyup.enter="sendMessage"
-            type="text"
-            placeholder="Envoyer un message..."
-            class="w-full p-2 border rounded-lg focus:outline-none focus:ring"
-          />
-        </div>
+      <div class="flex-1 overflow-y-auto p-4">
+        <Comment
+          v-for="comment in taskStore.allCommentsToTask"
+          :key="comment.id"
+          :comment="comment"
+          :currentUserId="authStore.UID"
+        />
+      </div>
+
+      <div class="p-4 border-t bg-white sticky bottom-0 z-10">
+        <input
+          v-model="newComment.content"
+          @keyup.enter="sendMessage"
+          type="text"
+          placeholder="Discuter sur cette tâche..."
+          class="w-full p-2 sm:p-3 md:p-4 border rounded-xl text-sm sm:text-base md:text-lg focus:outline-none focus:ring focus:ring-indigo-300"
+        />
       </div>
     </div>
-  </template>
+  </div>
+</template>
   
  <script setup>
 import { ref, onMounted, watch, onBeforeUnmount, getCurrentInstance } from 'vue';
 import { useRoute } from 'vue-router';
+import Comment from '@/components/Comment.vue'; 
 import { useAuthStore } from '@/stores/authStore';
 import { useTaskStore } from '@/stores/taskStore';
 import { getCommentsToTask, addCommentToTask } from '@/services/taskServices';
-import { format } from 'date-fns';
 
 
 const route = useRoute();
@@ -83,10 +52,6 @@ const newComment = ref({
    user: { uid: authStore.UID , username: undefined},
  });
 const token = authStore.getToken;
-
-const formatTimeStamp = (time) =>{
-  return format(new Date(time), " HH:mm ");
-}
 
 const loadCommentToTasks = async () => {
   console.log('loadCommentToTasks');
@@ -145,13 +110,11 @@ watch(
   },
   { immediate: true }
 );
-const isMineComment = (t) => {
-   return t.task.userId === authStore.UID;
-};
+
 
 onMounted(async () => {
   await loadCommentToTasks();
-
+console.log('authStore.UID', authStore.UID)
   proxy.$socket.connect();
   proxy.$socket.on('connect', () => {
     socketStatus.value = 'Connecté';

@@ -16,7 +16,8 @@
         </div>  
         <div v-if="iskTaskMine(props.item)" class="task-actions">
           
-          <div class="relative group">
+          <div v-if="!isCommunityRoute">
+                      <div class="relative group">
             <button id="dropdownDefaultButton" class="text-indigo-900 bg-indigo-300 hover:bg-indigo-400 font-medium rounded-sm text-sm px-5 py-2.5 text-center inline-flex items-center" type="button">
               Actions
               <svg class="w-2.5 h-2.5 ms-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
@@ -55,6 +56,8 @@
               </ul>
             </div>
           </div>
+          </div>
+
         </div>
         <div v-if="!iskTaskMine(props.item)">
           <div v-if="getSharedByUserName(props.item)">
@@ -67,11 +70,13 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue';
+import { defineProps, defineEmits, ref, computed  } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { toggleTask, removeTask, toggleSharedTask } from '@/services/taskServices';
 import { manageErrorCodeTaskAndSubtask } from '@/utils/manageUtils';
 import { useTaskStore } from '@/stores/taskStore';
+import { useRoute } from 'vue-router';
+
 
 const props = defineProps(['item']); 
 const emit = defineEmits(['clickOnTask', 'remove', 'edit']);
@@ -80,6 +85,10 @@ const task = ref(props.item);
 const errorCode = ref('');
 const errorMessage = ref('');
 const taskStore = useTaskStore();
+const route = useRoute();
+
+const isCommunityRoute = computed(() => route.path === '/comunity');
+
 
 const handleTaskClick = () => {
   taskStore.setSelectedTask(task.value);

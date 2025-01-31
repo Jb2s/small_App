@@ -1,5 +1,6 @@
 <template>
     <div class="p-5">
+
       <div class="inline-flex rounded-md shadow-sm" role="group">
         <button
           type="button"
@@ -14,63 +15,77 @@
           Autres
         </button>
       </div>
+
       <div :class="['border border-gray-300 bg-gray-100 rounded-b-lg p-5 ']" >
         <div v-show="selectedChoice === 'me'">
           <div class=" justify-center">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div v-for="(task) in taskStore.taskList" :key="task.id" class="mb-4">
-                <div v-if="isTaskMineShared(task)">
-                  <div v-if="task.isShared">
-                    <TodoTask 
-                      :item="task" 
-                      @clickOnTask="openModal(task)"
-                      />
-                      <div class="flex justify-end mt-2 text-xs text-indigo-400" >
-                        <router-link
-                        :to="`/comunity/${task.id}`"
-                        class="text-indigo-400 hover:bg-indigo-500 hover:text-indigo-100 px-4 py-2 rounded-full"
-                        >
-                        <i> Discuter <i class="fas fa-comments mr-2"></i></i> 
-                        </router-link>
-                      </div>
+            <div>
+              <div v-if="!hasSharedTasks">
+                <p class="text-gray-500 text-md text">Vous n'avez partagé aucune tâche(s) jusqu'ici.</p>
+              </div>
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" >
+                <div v-for="(task) in taskStore.taskList" :key="task.id" class="mb-4">
+                  <div>
+                    <div v-if="task.isShared">
+                      <TodoTask 
+                        :item="task" 
+                        @clickOnTask="openModal(task)"
+                        />
+                        <div class="flex justify-end mt-2 text-xs text-indigo-400" >
+                          <router-link
+                          :to="`/comunity/${task.id}`"
+                          class="text-indigo-400 hover:bg-indigo-500 hover:text-indigo-100 px-4 py-2 rounded-full"
+                          >
+                          <i> Discuter <i class="fas fa-comments mr-2"></i></i> 
+                          </router-link>
+                        </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
         <div v-show="selectedChoice === 'others'">
-          <div class=" justify-center">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div v-for="(task) in taskStore.sharedTaskList" :key="task.id" class="mb-4">
-                <div v-if="!isTaskMineShared(task)">
-                  <TodoTask 
-                  :item="task" 
-                  @clickOnTask="openModal(task)"
-                  />
-                  <div class="flex justify-end mt-2 text-xs text-indigo-400">
-                    <router-link
-                      :to="`/comunity/${task.id}`"
-                      class="text-indigo-400 hover:bg-indigo-500 hover:text-indigo-100 px-4 py-2 rounded-full"
-                    >
-                    <i> Discuter <i class="fas fa-comments mr-2"></i></i> 
-                    </router-link>                  </div>
-                </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" v-if="taskStore.sharedTaskList.length">
+                <div v-for="(task) in taskStore.sharedTaskList" :key="task.id" class="mb-4">
+                  <div v-if="!isTaskMineShared(task)">
+                    <TodoTask 
+                    :item="task" 
+                    @clickOnTask="openModal(task)"
+                    />
+                    <div class="flex justify-end mt-2 text-xs text-indigo-400">
+                      <router-link
+                        :to="`/comunity/${task.id}`"
+                        class="text-indigo-400 hover:bg-indigo-500 hover:text-indigo-100 px-4 py-2 rounded-full"
+                      >
+                      <i> Discuter <i class="fas fa-comments mr-2"></i></i> 
+                      </router-link>                  
+                    </div>
+                  </div>
+              <div v-if="!taskStore.sharedTaskList.length">
+                <p class="text-gray-500 text-md text">  
+                  Aucune tâche(s) partagée(s) jusqu'ici.
+                </p>
+              </div>
               </div>
             </div>
-          </div>
         </div>
+
           <Modal 
           v-if="isModalOpen" 
           :task="taskStore.selectedTask" 
           @close="closeModal" 
           />
+
       </div>
+
     </div>
   </template>
   
   <script setup>
-  import { ref } from "vue";
+  import { ref, computed } from "vue";
   import TodoTask from '@/components/Task.vue'; 
   import Modal from '@/components/Modal.vue'; 
   import { useTaskStore } from '@/stores/taskStore';
@@ -104,13 +119,16 @@
    return t.userId === authStore.UID;
 };
 
+// const hasSharedTasks = () => taskStore.taskList.some(t => t.isShared);
+const hasSharedTasks = computed(() => taskStore.taskList.some(t => t.isShared));
+
   const loadSharedTasks = async () => {
    const token = authStore.getToken;
    if (token) {
        try {
           const result = await getSharedTasks(token);
           console.log('result shared', result);
-          taskStore.setSharedTaskList(result);
+          taskStore.setSharedTaskList(result.sharedTasks);
        } catch (error) {
            console.error('loadSharedTasks.error >> ', error);
        }
