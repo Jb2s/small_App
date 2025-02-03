@@ -84,12 +84,12 @@
   </template>
   
   <script setup>
-  import { ref, computed } from "vue";
+  import { ref, computed, onMounted } from "vue";
   import TodoTask from '@/components/Task.vue'; 
   import Modal from '@/components/Modal.vue'; 
   import { useTaskStore } from '@/stores/taskStore';
   import { useAuthStore } from '@/stores/authStore';
-  import { getSharedTasksOthers } from '@/services/taskServices';
+  import { getSharedTasksOthers,getUserTasks } from '@/services/taskServices';
 
 
   const authStore = useAuthStore();
@@ -107,18 +107,14 @@
     taskStore.selectedTask = task;
     isModalOpen.value = true; 
 };
+
   const handleChoice = (choice) => {
     selectedChoice.value = choice;
     console.log(selectedChoice.value);
     console.log(taskStore.sharedTaskList);
     loadSharedTasks();
-
   };
-//   const isTaskMineShared = (t) => {
-//    return t.userId === authStore.UID;
-// };
 
-// const hasSharedTasks = () => taskStore.taskList.some(t => t.isShared);
 const hasSharedTasks = computed(() => taskStore.taskList.some(t => t.isShared));
 
   const loadSharedTasks = async () => {
@@ -134,6 +130,24 @@ const hasSharedTasks = computed(() => taskStore.taskList.some(t => t.isShared));
    }
 }
 
+const loadTasks = async () => {
+  console.log('loadTasks');
+   const token = authStore.getToken;
+   if (token) {
+       try {
+          const result = await getUserTasks(token);
+          taskStore.setTaskList(result);
+          console.log('result in front end', result)
+          console.log('TASK STORE',  taskStore.taskList)
+       } catch (error) {
+           console.error('loadTasks.error >> ', error);
+       }
+   }
+}
+
+onMounted( async () => {
+await loadTasks();
+});
   </script>
   
   <style scoped>

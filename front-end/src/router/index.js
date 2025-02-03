@@ -1,10 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import LoginView from '../views/LoginView.vue';
-import HomeView from '../views/HomeView.vue';
-import RegisterView from '../views/RegisterView.vue';
-import ComunityView from '../views/ComunityView.vue';
-import { useAuthStore } from '@/stores/authStore';
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -12,25 +6,25 @@ const router = createRouter({
     {
       path: '/register',
       name: 'register',
-      component: RegisterView,
+      component: () => import('@/views/RegisterView.vue'),
       meta: { showNavbar: false },
     },
     {
       path: '/',
       name: 'login',
-      component: LoginView,
+      component: () => import('@/views/LoginView.vue'),
       meta: { showNavbar: false }, 
     },
     {
       path: '/home',
       name: 'home',
-      component: HomeView,
+      component: () => import('@/views/HomeView.vue'),
       meta: { showNavbar: true, requiresAuth: true }, 
     },
     {
       path: '/comunity',
       name: 'comunity',
-      component: ComunityView,
+      component: () => import('@/views/ComunityView.vue'),
       meta: { showNavbar: true, requiresAuth: true }, 
     },
     {
@@ -44,14 +38,14 @@ const router = createRouter({
 
 
 router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore();
 
-  const _isUserAuthenticated = authStore.isUserAuthenticated;
+  const _isUserAuthenticated = localStorage.getItem('state');;
   console.log('_isUserAuthenticated',_isUserAuthenticated)
 
   if (to.meta.requiresAuth && !_isUserAuthenticated) {
     next('/'); 
   } else {
+    localStorage.setItem('lastRoute', to.fullPath); 
     next(); 
   }
 });

@@ -3,7 +3,7 @@
     <div class="flex items-center justify-center min-h-screen bg-gray-100">
       <div >
         <form @submit.prevent="handleLogin" :class="['bg-white p-6 rounded shadow-md w-80', errorCode === 'U010' ? 'border-2 border-red-500' : 'border' ]">
-          <h2 class="text-center text-2xl font-bold mb-4">Connexion</h2>
+          <h2 class="text-center text-indigo-500 text-2xl font-bold mb-4">Connexion</h2>
           <div class="mb-4">
             <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
             <input
@@ -11,7 +11,7 @@
               type="text"
               id="username"
               required
-              :class="['mt-1 block w-full border rounded-md p-2 focus:ring focus:ring-blue-200', 
+              :class="['mt-1 block w-full border rounded-md p-2 focus:ring focus:ring-indigo-200', 
                         errorCode === 'U001' ? 'border-2 border-red-500 focus:ring focus:ring-red-300' : 'border-gray-300' 
               ]"
             />
@@ -23,8 +23,10 @@
               type="password"
               id="password"
               required
-              class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-200"
+              class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-indigo-200"
+              
             />
+            
           </div>
           <button
             type="submit"

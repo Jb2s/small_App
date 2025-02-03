@@ -77,7 +77,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed  } from 'vue';
+import { ref, onMounted, computed, onBeforeUnmount  } from 'vue';
 import { useAuthStore } from '@/stores/authStore';
 import { addTaskWithSubTasks, getUserTasks, updateTaskWithSubTasks } from '@/services/taskServices';
 import { manageErrorCodeTaskAndSubtask } from '@/Utils/manageUtils';
@@ -220,12 +220,10 @@ onMounted(async () => {
   // console.log('socket',socket);
 });
 
-// onBeforeUnmount(() => {
-//   socket.off('task_updated', loadTasks);
-// });
-// onMounted(async () => {
-//   await loadTasks();
-// });
+onBeforeUnmount( async () => {
+
+  await loadTasks();
+});
 </script>
 
 <style scoped>

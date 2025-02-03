@@ -12,6 +12,11 @@ export const useAuthStore = defineStore('auth', {
     confirmRecieveToken(receiveToken) {
       this.isUserAuthenticated = true;
       this.token = receiveToken; 
+      localStorage.setItem('state', this.isUserAuthenticated); 
+
+    },
+    checkSession(){
+
     },
     getUser(user){
       this.createdUser = user;
@@ -24,11 +29,24 @@ export const useAuthStore = defineStore('auth', {
     getUsername(usrn){
       this.username = usrn;
     },
+    toggleStateToFalse() {
+      const currentValue = JSON.parse(localStorage.getItem('state'));
+      if (currentValue === true) {
+        localStorage.setItem('state', JSON.stringify(false));
+      } else {
+        console.log("state n'était pas true ou déjà false.");
+      }
+    },
     logout(){
       this.token = null;
       this.isUserAuthenticated = false;
+      this.toggleStateToFalse();
       return true;
     },
+  },
+  persist: {
+    key: 'auth-store', 
+    storage: sessionStorage,
   },
   getters: {
     getToken: (state) => state.token,
