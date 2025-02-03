@@ -8,7 +8,7 @@ const {
     updateUserTask,
     deleteUserTask,
     toggleTask,
-    getSharedTasks,
+    getSharedTasksOthers,
     toggleSharedTask,
     addCommentToTask,
     getCommentsToTask, 
@@ -17,7 +17,7 @@ const {
 
 router.get('/getTasks', getUserTasks);
 router.get('/:taskId/getCommentsToTask/', getCommentsToTask);
-router.get('/getSharedTasks', getSharedTasks);
+router.get('/getSharedTasks', getSharedTasksOthers);
 router.put('/:taskId/toggleSharedTask', toggleSharedTask);
 router.post('/addTask', addUserTask);
 router.post('/:taskId/addComment/', addCommentToTask);

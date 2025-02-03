@@ -3,6 +3,8 @@ const Task = require('../models/Task');
 const Subtask = require('../models/Subtask');
 const Comment = require('../models/Comment');
 const sequelize = require('../config/database');
+const { Op } = require('sequelize');
+
 
 const addUserTask = async (req, res) => {
   const { title, description, completed, subTasks } = req.body;
@@ -132,10 +134,15 @@ const  getCommentsToTask = async (req, res) =>{
 };
 
 
-const getSharedTasks = async (req, res) => {
+const getSharedTasksOthers = async (req, res) => {
+
+  const currentUserId = req.user.id; 
   try {
     const sharedTasks = await Task.findAll({
-      where: { isShared: true }, 
+      where: { 
+        isShared: true,
+        userId: { [Op.ne]: currentUserId },
+      }, 
       include: [
         {
           model: User,
@@ -434,7 +441,7 @@ module.exports = {
   updateUserTask,
   deleteUserTask,
   toggleTask,
-  getSharedTasks ,
+  getSharedTasksOthers,
   toggleSharedTask,
   addCommentToTask,
   getCommentsToTask,

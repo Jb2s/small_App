@@ -48,29 +48,28 @@
         </div>
 
         <div v-show="selectedChoice === 'others'">
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" v-if="taskStore.sharedTaskList.length">
-                <div v-for="(task) in taskStore.sharedTaskList" :key="task.id" class="mb-4">
-                  <div v-if="!isTaskMineShared(task)">
-                    <TodoTask 
-                    :item="task" 
-                    @clickOnTask="openModal(task)"
-                    />
-                    <div class="flex justify-end mt-2 text-xs text-indigo-400">
-                      <router-link
-                        :to="`/comunity/${task.id}`"
-                        class="text-indigo-400 hover:bg-indigo-500 hover:text-indigo-100 px-4 py-2 rounded-full"
-                      >
-                      <i> Discuter <i class="fas fa-comments mr-2"></i></i> 
-                      </router-link>                  
-                    </div>
-                  </div>
-              <div v-if="!taskStore.sharedTaskList.length">
-                <p class="text-gray-500 text-md text">  
-                  Aucune tâche(s) partagée(s) jusqu'ici.
-                </p>
+          <div v-if="!taskStore.sharedTaskList.length">
+            <p class="text-gray-500 text-md text"> Aucune tâche(s) partagée(s) jusqu'ici. </p>
+          </div>
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div v-for="(task) in taskStore.sharedTaskList" :key="task.id" class="mb-4" >
+              <div>
+                <TodoTask 
+                :item="task" 
+                @clickOnTask="openModal(task)"
+                />
+                <div class="flex justify-end mt-2 text-xs text-indigo-400">
+                  <router-link
+                    :to="`/comunity/${task.id}`"
+                    class="text-indigo-400 hover:bg-indigo-500 hover:text-indigo-100 px-4 py-2 rounded-full"
+                  >
+                  <i> Discuter <i class="fas fa-comments mr-2"></i></i> 
+                  </router-link>                  
+                </div>
               </div>
-              </div>
+             
             </div>
+          </div>
         </div>
 
           <Modal 
@@ -90,7 +89,7 @@
   import Modal from '@/components/Modal.vue'; 
   import { useTaskStore } from '@/stores/taskStore';
   import { useAuthStore } from '@/stores/authStore';
-  import { getSharedTasks } from '@/services/taskServices';
+  import { getSharedTasksOthers } from '@/services/taskServices';
 
 
   const authStore = useAuthStore();
@@ -115,9 +114,9 @@
     loadSharedTasks();
 
   };
-  const isTaskMineShared = (t) => {
-   return t.userId === authStore.UID;
-};
+//   const isTaskMineShared = (t) => {
+//    return t.userId === authStore.UID;
+// };
 
 // const hasSharedTasks = () => taskStore.taskList.some(t => t.isShared);
 const hasSharedTasks = computed(() => taskStore.taskList.some(t => t.isShared));
@@ -126,7 +125,7 @@ const hasSharedTasks = computed(() => taskStore.taskList.some(t => t.isShared));
    const token = authStore.getToken;
    if (token) {
        try {
-          const result = await getSharedTasks(token);
+          const result = await getSharedTasksOthers(token);
           console.log('result shared', result);
           taskStore.setSharedTaskList(result.sharedTasks);
        } catch (error) {

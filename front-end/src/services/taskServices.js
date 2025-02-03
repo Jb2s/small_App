@@ -105,7 +105,7 @@ export const getUserTasks = async (token) => {
     }
 };
 
-export const getSharedTasks = async (token) => {
+export const getSharedTasksOthers = async (token) => {
     const url = `${import.meta.env.VITE_URL_API}/tasks/getSharedTasks`; 
 
     try {
@@ -122,7 +122,6 @@ export const getSharedTasks = async (token) => {
         throw error.response.data; 
     }
 };
-
 
 export const getCommentsToTask = async (tId ,token) => {
     const url = `${import.meta.env.VITE_URL_API}/tasks/${tId}/getCommentsToTask/`; 
